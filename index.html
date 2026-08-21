@@ -7,186 +7,101 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1A237E">
 <title>Study Plan 📚</title>
-<link rel="manifest" href="manifest.json">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --navy:   #1A237E;
-    --indigo: #283593;
-    --gold:   #F9A825;
-    --gold-l: #FFF9C4;
-    --green:  #2E7D32;
-    --white:  #FFFFFF;
-    --bg:     #F4F6FF;
-    --card:   #FFFFFF;
-    --txt:    #1C1C2E;
-    --muted:  #6B7280;
-    --border: #E2E8F0;
-    --radius: 16px;
-    --shadow: 0 2px 12px rgba(26,35,126,0.08);
+    --navy:#1A237E;--indigo:#283593;--gold:#F9A825;--gold-l:#FFF9C4;
+    --white:#FFFFFF;--bg:#F4F6FF;--card:#FFFFFF;--txt:#1C1C2E;
+    --muted:#6B7280;--border:#E2E8F0;--radius:16px;
+    --shadow:0 2px 12px rgba(26,35,126,0.08);
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-         background: var(--bg); color: var(--txt); min-height: 100vh; }
-
-  /* ── TOP BAR ── */
-  .topbar { background: var(--navy); color: #fff; padding: 16px 20px 12px;
-            position: sticky; top: 0; z-index: 100;
-            box-shadow: 0 2px 8px rgba(0,0,0,.2); }
-  .topbar h1 { font-size: 18px; font-weight: 700; letter-spacing: -.3px; }
-  .topbar p  { font-size: 12px; opacity: .7; margin-top: 2px; }
-
-  /* ── NAV TABS ── */
-  .nav { display: flex; background: var(--navy); border-top: 1px solid rgba(255,255,255,.1); }
-  .nav button { flex: 1; padding: 10px 4px; background: none; border: none;
-                color: rgba(255,255,255,.55); font-size: 11px; font-weight: 600;
-                cursor: pointer; display: flex; flex-direction: column;
-                align-items: center; gap: 3px; transition: color .15s; }
-  .nav button .icon { font-size: 20px; }
-  .nav button.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
-
-  /* ── PAGES ── */
-  .page { display: none; padding: 16px; max-width: 480px; margin: 0 auto; }
-  .page.active { display: block; }
-
-  /* ── CARDS ── */
-  .card { background: var(--card); border-radius: var(--radius);
-          box-shadow: var(--shadow); margin-bottom: 14px; overflow: hidden; }
-  .card-head { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
-  .card-head h2 { font-size: 15px; font-weight: 700; }
-  .card-head p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .card-body { padding: 14px 16px; }
-
-  /* ── TODAY SESSION CARDS ── */
-  .session-card { border-radius: 12px; margin-bottom: 10px; overflow: hidden;
-                  box-shadow: 0 1px 6px rgba(0,0,0,.07); }
-  .session-top  { padding: 12px 14px 10px; display: flex; align-items: center; gap: 10px; }
-  .subj-dot     { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .subj-name    { font-size: 15px; font-weight: 700; flex: 1; }
-  .subj-time    { font-size: 12px; opacity: .75; }
-  .session-actions { display: flex; border-top: 1px solid rgba(0,0,0,.06); }
-  .session-actions button {
-    flex: 1; padding: 10px 6px; border: none; background: none;
-    font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s;
-    display: flex; align-items: center; justify-content: center; gap: 5px;
-  }
-  .session-actions button:not(:last-child) { border-right: 1px solid rgba(0,0,0,.06); }
-  .btn-done   { color: #2E7D32; }
-  .btn-done:active, .btn-done.active   { background: #E8F5E9; }
-  .btn-miss   { color: #C62828; }
-  .btn-miss:active, .btn-miss.active   { background: #FFEBEE; }
-  .btn-skip   { color: #757575; }
-  .btn-skip:active, .btn-skip.active   { background: #F5F5F5; }
-  .score-row  { display: flex; align-items: center; gap: 6px; padding: 8px 14px;
-                border-top: 1px solid rgba(0,0,0,.06); flex-wrap: wrap; }
-  .score-row span { font-size: 12px; color: var(--muted); }
-  .star-btn   { font-size: 22px; background: none; border: none; cursor: pointer;
-                padding: 2px; transition: transform .1s; }
-  .star-btn:active { transform: scale(1.3); }
-
-  /* ── REST DAY ── */
-  .rest-card { text-align: center; padding: 32px 16px; }
-  .rest-card .emoji { font-size: 48px; margin-bottom: 10px; }
-  .rest-card h2 { font-size: 20px; font-weight: 700; color: var(--navy); }
-  .rest-card p  { font-size: 14px; color: var(--muted); margin-top: 6px; }
-
-  /* ── STATS STRIP ── */
-  .stats-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
-  .stat-box { background: var(--card); border-radius: 14px; padding: 14px 10px;
-              text-align: center; box-shadow: var(--shadow); }
-  .stat-num  { font-size: 26px; font-weight: 800; color: var(--navy); }
-  .stat-lbl  { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-  /* ── PROGRESS BAR ── */
-  .prog-wrap { height: 8px; background: #E8EAF6; border-radius: 99px; overflow: hidden; margin: 8px 0; }
-  .prog-bar  { height: 100%; border-radius: 99px; transition: width .4s ease; }
-
-  /* ── MONTH PICKER ── */
-  .month-nav { display: flex; align-items: center; justify-content: space-between;
-               padding: 12px 16px; background: var(--card); border-radius: 14px;
-               box-shadow: var(--shadow); margin-bottom: 14px; }
-  .month-nav button { background: none; border: 1px solid var(--border); border-radius: 8px;
-                      width: 36px; height: 36px; font-size: 16px; cursor: pointer;
-                      display: flex; align-items: center; justify-content: center; }
-  .month-nav h3 { font-size: 16px; font-weight: 700; color: var(--navy); }
-
-  /* ── LOG TABLE ── */
-  .log-item { display: flex; align-items: center; gap: 10px; padding: 10px 0;
-              border-bottom: 1px solid var(--border); }
-  .log-item:last-child { border-bottom: none; }
-  .log-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .log-info { flex: 1; min-width: 0; }
-  .log-date { font-size: 11px; color: var(--muted); }
-  .log-subj { font-size: 13px; font-weight: 600; }
-  .log-status { font-size: 11px; padding: 3px 8px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
-  .status-done { background: #E8F5E9; color: #2E7D32; }
-  .status-miss { background: #FFEBEE; color: #C62828; }
-  .status-skip { background: #F5F5F5; color: #757575; }
-  .status-none { background: #F0F0F0; color: #BDBDBD; }
-
-  /* ── SUBJECT FILTER PILLS ── */
-  .pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-  .pill  { padding: 5px 12px; border-radius: 99px; font-size: 12px; font-weight: 600;
-           border: 1.5px solid transparent; cursor: pointer; transition: all .15s; }
-  .pill.active { color: #fff; border-color: transparent; }
-
-  /* ── CHART ── */
-  .chart-wrap { position: relative; height: 200px; }
-
-  /* ── MOTIVATE BANNER ── */
-  .motivate { background: linear-gradient(135deg,#1A237E,#3949AB);
-              color: #fff; border-radius: var(--radius); padding: 16px;
-              margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
-  .motivate .emoji { font-size: 28px; flex-shrink: 0; }
-  .motivate p { font-size: 14px; line-height: 1.4; }
-
-  /* ── BOTTOM PADDING (above phone nav) ── */
-  .page-pad { height: 24px; }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+  .topbar{background:var(--navy);color:#fff;padding:16px 20px 12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .topbar h1{font-size:18px;font-weight:700}
+  .topbar p{font-size:12px;opacity:.7;margin-top:2px}
+  .nav{display:flex;background:var(--navy);border-top:1px solid rgba(255,255,255,.1)}
+  .nav button{flex:1;padding:10px 4px;background:none;border:none;color:rgba(255,255,255,.55);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
+  .nav button .icon{font-size:20px}
+  .nav button.active{color:var(--gold);border-bottom:2px solid var(--gold)}
+  .page{display:none;padding:16px;max-width:480px;margin:0 auto}
+  .page.active{display:block}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+  .card-head{padding:14px 16px 10px;border-bottom:1px solid var(--border)}
+  .card-head h2{font-size:15px;font-weight:700}
+  .card-head p{font-size:12px;color:var(--muted);margin-top:2px}
+  .card-body{padding:14px 16px}
+  .session-card{border-radius:12px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.07)}
+  .session-top{padding:12px 14px 10px;display:flex;align-items:center;gap:10px}
+  .subj-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .subj-name{font-size:15px;font-weight:700;flex:1}
+  .subj-time{font-size:12px;opacity:.75}
+  .session-actions{display:flex;border-top:1px solid rgba(0,0,0,.06)}
+  .session-actions button{flex:1;padding:10px 6px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+  .session-actions button:not(:last-child){border-right:1px solid rgba(0,0,0,.06)}
+  .btn-done{color:#2E7D32}.btn-done.active{background:#E8F5E9}
+  .btn-miss{color:#C62828}.btn-miss.active{background:#FFEBEE}
+  .btn-skip{color:#757575}.btn-skip.active{background:#F5F5F5}
+  .score-row{display:flex;align-items:center;gap:4px;padding:8px 14px;border-top:1px solid rgba(0,0,0,.06);flex-wrap:wrap}
+  .score-row span{font-size:12px;color:var(--muted);margin-right:4px}
+  .star-btn{font-size:20px;background:none;border:none;cursor:pointer;padding:1px;transition:transform .1s;line-height:1}
+  .star-btn:active{transform:scale(1.3)}
+  .rest-card{text-align:center;padding:32px 16px}
+  .rest-card .emoji{font-size:48px;margin-bottom:10px}
+  .rest-card h2{font-size:20px;font-weight:700;color:var(--navy)}
+  .rest-card p{font-size:14px;color:var(--muted);margin-top:6px}
+  .stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  .stat-box{background:var(--card);border-radius:14px;padding:14px 10px;text-align:center;box-shadow:var(--shadow)}
+  .stat-num{font-size:26px;font-weight:800;color:var(--navy)}
+  .stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+  .month-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--card);border-radius:14px;box-shadow:var(--shadow);margin-bottom:14px}
+  .month-nav button{background:none;border:1px solid var(--border);border-radius:8px;width:36px;height:36px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .month-nav h3{font-size:16px;font-weight:700;color:var(--navy)}
+  .log-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .log-item:last-child{border-bottom:none}
+  .log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .log-info{flex:1;min-width:0}
+  .log-date{font-size:11px;color:var(--muted)}
+  .log-subj{font-size:13px;font-weight:600}
+  .log-status{font-size:11px;padding:3px 8px;border-radius:99px;font-weight:600;white-space:nowrap}
+  .status-done{background:#E8F5E9;color:#2E7D32}
+  .status-miss{background:#FFEBEE;color:#C62828}
+  .status-skip{background:#F5F5F5;color:#757575}
+  .status-none{background:#F0F0F0;color:#BDBDBD}
+  .pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;border:1.5px solid transparent;cursor:pointer;transition:all .15s}
+  .chart-wrap{position:relative;height:200px}
+  .motivate{background:linear-gradient(135deg,#1A237E,#3949AB);color:#fff;border-radius:var(--radius);padding:16px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
+  .motivate .emoji{font-size:28px;flex-shrink:0}
+  .motivate p{font-size:14px;line-height:1.4}
+  .page-pad{height:24px}
 </style>
 </head>
 <body>
-
 <div class="topbar">
   <h1>📚 Study Plan</h1>
   <p id="topbar-date">Loading…</p>
 </div>
 <nav class="nav">
-  <button class="active" onclick="showPage('today',this)">
-    <span class="icon">📅</span>Today
-  </button>
-  <button onclick="showPage('log',this)">
-    <span class="icon">📝</span>Log
-  </button>
-  <button onclick="showPage('progress',this)">
-    <span class="icon">📈</span>Progress
-  </button>
+  <button class="active" onclick="showPage('today',this)"><span class="icon">📅</span>Today</button>
+  <button onclick="showPage('log',this)"><span class="icon">📝</span>Log</button>
+  <button onclick="showPage('progress',this)"><span class="icon">📈</span>Progress</button>
 </nav>
 
-<!-- ══ TODAY PAGE ══ -->
 <div id="page-today" class="page active">
   <div id="motivate-banner" class="motivate">
     <span class="emoji">🎯</span>
-    <p id="motivate-text">Loading your sessions…</p>
+    <p id="motivate-text">Loading…</p>
   </div>
   <div class="stats-strip">
-    <div class="stat-box">
-      <div class="stat-num" id="stat-week-done">–</div>
-      <div class="stat-lbl">This week</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-num" id="stat-streak">–</div>
-      <div class="stat-lbl">Day streak 🔥</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-num" id="stat-total">–</div>
-      <div class="stat-lbl">Total done</div>
-    </div>
+    <div class="stat-box"><div class="stat-num" id="stat-week-done">–</div><div class="stat-lbl">This week</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-streak">–</div><div class="stat-lbl">Day streak 🔥</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-total">–</div><div class="stat-lbl">Total done</div></div>
   </div>
   <div id="today-sessions"></div>
   <div class="page-pad"></div>
 </div>
 
-<!-- ══ LOG PAGE ══ -->
 <div id="page-log" class="page">
   <div class="month-nav">
     <button onclick="changeLogMonth(-1)">‹</button>
@@ -194,406 +109,195 @@
     <button onclick="changeLogMonth(1)">›</button>
   </div>
   <div class="pills" id="subj-pills"></div>
-  <div class="card">
-    <div class="card-body" style="padding:8px 16px">
-      <div id="log-list"></div>
-    </div>
-  </div>
+  <div class="card"><div class="card-body" style="padding:8px 16px"><div id="log-list"></div></div></div>
   <div class="page-pad"></div>
 </div>
 
-<!-- ══ PROGRESS PAGE ══ -->
 <div id="page-progress" class="page">
   <div class="card">
-    <div class="card-head">
-      <h2>Sessions per Month</h2>
-      <p>Stacked by subject</p>
-    </div>
-    <div class="card-body">
-      <div class="chart-wrap"><canvas id="chart-monthly"></canvas></div>
-    </div>
+    <div class="card-head"><h2>Sessions per Month</h2><p>Stacked by subject</p></div>
+    <div class="card-body"><div class="chart-wrap"><canvas id="chart-monthly"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="card-head">
-      <h2>Average Score</h2>
-      <p>Self-rating out of 10</p>
-    </div>
-    <div class="card-body">
-      <div class="chart-wrap"><canvas id="chart-score"></canvas></div>
-    </div>
+    <div class="card-head"><h2>Average Score</h2><p>Self-rating out of 10</p></div>
+    <div class="card-body"><div class="chart-wrap"><canvas id="chart-score"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="card-head">
-      <h2>Completion Rate</h2>
-      <p>% of sessions marked Done</p>
-    </div>
-    <div class="card-body">
-      <div class="chart-wrap"><canvas id="chart-complete"></canvas></div>
-    </div>
+    <div class="card-head"><h2>Completion Rate</h2><p>% of sessions marked Done</p></div>
+    <div class="card-body"><div class="chart-wrap"><canvas id="chart-complete"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="card-head">
-      <h2>By Subject (All Year)</h2>
-    </div>
-    <div class="card-body">
-      <div class="chart-wrap"><canvas id="chart-subject"></canvas></div>
-    </div>
+    <div class="card-head"><h2>By Subject (All Year)</h2></div>
+    <div class="card-body"><div class="chart-wrap"><canvas id="chart-subject"></canvas></div></div>
   </div>
   <div class="page-pad"></div>
 </div>
 
 <script>
-const SUBJ_COLOR = {
-  Math:      '#1565C0', English: '#2E7D32',
-  Khmer:     '#E64A19', Reading: '#C2185B',
-  Chemistry: '#F9A825', Physics: '#512DA8',
-};
-const SUBJ_LIGHT = {
-  Math:      '#E3F2FD', English: '#E8F5E9',
-  Khmer:     '#FBE9E7', Reading: '#FCE4EC',
-  Chemistry: '#FFFDE7', Physics: '#EDE7F6',
-};
-const SUBJECTS = ['Math','English','Khmer','Reading','Chemistry','Physics'];
-const BAR_COLORS = ['#1565C0','#2E7D32','#E64A19','#C2185B','#F9A825','#512DA8'];
+const SUBJ_COLOR={Math:'#1565C0',English:'#2E7D32',Khmer:'#E64A19',Reading:'#C2185B',Chemistry:'#F9A825',Physics:'#512DA8'};
+const SUBJ_LIGHT={Math:'#E3F2FD',English:'#E8F5E9',Khmer:'#FBE9E7',Reading:'#FCE4EC',Chemistry:'#FFFDE7',Physics:'#EDE7F6'};
+const SUBJECTS=['Math','English','Khmer','Reading','Chemistry','Physics'];
+const BAR_COLORS=['#1565C0','#2E7D32','#E64A19','#C2185B','#F9A825','#512DA8'];
+const KEY='studyplan_v1';
+let logState={};
+let logMonthIdx=0;
+let logSubjFilter='All';
+let charts={};
+// Sessions embedded directly — no fetch needed
+const sessions = [{"date":"2026-09-01","dateLabel":"Tue, 01 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-01","dateLabel":"Tue, 01 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-09-02","dateLabel":"Wed, 02 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-02","dateLabel":"Wed, 02 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-03","dateLabel":"Thu, 03 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-09-03","dateLabel":"Thu, 03 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-04","dateLabel":"Fri, 04 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-09-04","dateLabel":"Fri, 04 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-09-07","dateLabel":"Mon, 07 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-07","dateLabel":"Mon, 07 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-08","dateLabel":"Tue, 08 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-08","dateLabel":"Tue, 08 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-09-09","dateLabel":"Wed, 09 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-09","dateLabel":"Wed, 09 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-10","dateLabel":"Thu, 10 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-09-10","dateLabel":"Thu, 10 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-11","dateLabel":"Fri, 11 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-09-11","dateLabel":"Fri, 11 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-09-14","dateLabel":"Mon, 14 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-14","dateLabel":"Mon, 14 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-15","dateLabel":"Tue, 15 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-15","dateLabel":"Tue, 15 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-09-16","dateLabel":"Wed, 16 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-16","dateLabel":"Wed, 16 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-17","dateLabel":"Thu, 17 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-09-17","dateLabel":"Thu, 17 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-18","dateLabel":"Fri, 18 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-09-18","dateLabel":"Fri, 18 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-09-21","dateLabel":"Mon, 21 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-21","dateLabel":"Mon, 21 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-22","dateLabel":"Tue, 22 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-22","dateLabel":"Tue, 22 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-09-23","dateLabel":"Wed, 23 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-23","dateLabel":"Wed, 23 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-24","dateLabel":"Thu, 24 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-09-24","dateLabel":"Thu, 24 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-25","dateLabel":"Fri, 25 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-09-25","dateLabel":"Fri, 25 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-09-28","dateLabel":"Mon, 28 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-28","dateLabel":"Mon, 28 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-09-29","dateLabel":"Tue, 29 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-29","dateLabel":"Tue, 29 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-09-30","dateLabel":"Wed, 30 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-09-30","dateLabel":"Wed, 30 Sep 2026","month":"Sep 2026","monthKey":"2026-09","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-01","dateLabel":"Thu, 01 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-10-01","dateLabel":"Thu, 01 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-02","dateLabel":"Fri, 02 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-10-02","dateLabel":"Fri, 02 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-10-05","dateLabel":"Mon, 05 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-05","dateLabel":"Mon, 05 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-06","dateLabel":"Tue, 06 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-06","dateLabel":"Tue, 06 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-10-07","dateLabel":"Wed, 07 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-07","dateLabel":"Wed, 07 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-08","dateLabel":"Thu, 08 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-10-08","dateLabel":"Thu, 08 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-09","dateLabel":"Fri, 09 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-10-09","dateLabel":"Fri, 09 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-10-12","dateLabel":"Mon, 12 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-12","dateLabel":"Mon, 12 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-13","dateLabel":"Tue, 13 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-13","dateLabel":"Tue, 13 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-10-14","dateLabel":"Wed, 14 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-14","dateLabel":"Wed, 14 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-15","dateLabel":"Thu, 15 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-10-15","dateLabel":"Thu, 15 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-16","dateLabel":"Fri, 16 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-10-16","dateLabel":"Fri, 16 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-10-19","dateLabel":"Mon, 19 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-19","dateLabel":"Mon, 19 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-20","dateLabel":"Tue, 20 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-20","dateLabel":"Tue, 20 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-10-21","dateLabel":"Wed, 21 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-21","dateLabel":"Wed, 21 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-22","dateLabel":"Thu, 22 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-10-22","dateLabel":"Thu, 22 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-23","dateLabel":"Fri, 23 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-10-23","dateLabel":"Fri, 23 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-10-26","dateLabel":"Mon, 26 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-26","dateLabel":"Mon, 26 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-27","dateLabel":"Tue, 27 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-27","dateLabel":"Tue, 27 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-10-28","dateLabel":"Wed, 28 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-10-28","dateLabel":"Wed, 28 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-29","dateLabel":"Thu, 29 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-10-29","dateLabel":"Thu, 29 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-10-30","dateLabel":"Fri, 30 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-10-30","dateLabel":"Fri, 30 Oct 2026","month":"Oct 2026","monthKey":"2026-10","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-11-02","dateLabel":"Mon, 02 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-02","dateLabel":"Mon, 02 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-03","dateLabel":"Tue, 03 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-03","dateLabel":"Tue, 03 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-11-04","dateLabel":"Wed, 04 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-04","dateLabel":"Wed, 04 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-05","dateLabel":"Thu, 05 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-11-05","dateLabel":"Thu, 05 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-06","dateLabel":"Fri, 06 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-11-06","dateLabel":"Fri, 06 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-11-09","dateLabel":"Mon, 09 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-09","dateLabel":"Mon, 09 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-10","dateLabel":"Tue, 10 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-10","dateLabel":"Tue, 10 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-11-11","dateLabel":"Wed, 11 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-11","dateLabel":"Wed, 11 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-12","dateLabel":"Thu, 12 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-11-12","dateLabel":"Thu, 12 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-13","dateLabel":"Fri, 13 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-11-13","dateLabel":"Fri, 13 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-11-16","dateLabel":"Mon, 16 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-16","dateLabel":"Mon, 16 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-17","dateLabel":"Tue, 17 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-17","dateLabel":"Tue, 17 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-11-18","dateLabel":"Wed, 18 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-18","dateLabel":"Wed, 18 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-19","dateLabel":"Thu, 19 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-11-19","dateLabel":"Thu, 19 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-20","dateLabel":"Fri, 20 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-11-20","dateLabel":"Fri, 20 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-11-23","dateLabel":"Mon, 23 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-23","dateLabel":"Mon, 23 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-24","dateLabel":"Tue, 24 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-24","dateLabel":"Tue, 24 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-11-25","dateLabel":"Wed, 25 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-25","dateLabel":"Wed, 25 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-26","dateLabel":"Thu, 26 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-11-26","dateLabel":"Thu, 26 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-11-27","dateLabel":"Fri, 27 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-11-27","dateLabel":"Fri, 27 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-11-30","dateLabel":"Mon, 30 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-11-30","dateLabel":"Mon, 30 Nov 2026","month":"Nov 2026","monthKey":"2026-11","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-01","dateLabel":"Tue, 01 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-01","dateLabel":"Tue, 01 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-12-02","dateLabel":"Wed, 02 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-02","dateLabel":"Wed, 02 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-03","dateLabel":"Thu, 03 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-12-03","dateLabel":"Thu, 03 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-04","dateLabel":"Fri, 04 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-12-04","dateLabel":"Fri, 04 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-12-07","dateLabel":"Mon, 07 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-07","dateLabel":"Mon, 07 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-08","dateLabel":"Tue, 08 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-08","dateLabel":"Tue, 08 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-12-09","dateLabel":"Wed, 09 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-09","dateLabel":"Wed, 09 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-10","dateLabel":"Thu, 10 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-12-10","dateLabel":"Thu, 10 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-11","dateLabel":"Fri, 11 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-12-11","dateLabel":"Fri, 11 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-12-14","dateLabel":"Mon, 14 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-14","dateLabel":"Mon, 14 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-15","dateLabel":"Tue, 15 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-15","dateLabel":"Tue, 15 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-12-16","dateLabel":"Wed, 16 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-16","dateLabel":"Wed, 16 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-17","dateLabel":"Thu, 17 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-12-17","dateLabel":"Thu, 17 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-18","dateLabel":"Fri, 18 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-12-18","dateLabel":"Fri, 18 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-12-21","dateLabel":"Mon, 21 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-21","dateLabel":"Mon, 21 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-22","dateLabel":"Tue, 22 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-22","dateLabel":"Tue, 22 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-12-23","dateLabel":"Wed, 23 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-23","dateLabel":"Wed, 23 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-24","dateLabel":"Thu, 24 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-12-24","dateLabel":"Thu, 24 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-25","dateLabel":"Fri, 25 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2026-12-25","dateLabel":"Fri, 25 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2026-12-28","dateLabel":"Mon, 28 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-28","dateLabel":"Mon, 28 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-29","dateLabel":"Tue, 29 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-29","dateLabel":"Tue, 29 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2026-12-30","dateLabel":"Wed, 30 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2026-12-30","dateLabel":"Wed, 30 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2026-12-31","dateLabel":"Thu, 31 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2026-12-31","dateLabel":"Thu, 31 Dec 2026","month":"Dec 2026","monthKey":"2026-12","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-01","dateLabel":"Fri, 01 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-01-01","dateLabel":"Fri, 01 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-01-04","dateLabel":"Mon, 04 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-04","dateLabel":"Mon, 04 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-05","dateLabel":"Tue, 05 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-05","dateLabel":"Tue, 05 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-01-06","dateLabel":"Wed, 06 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-06","dateLabel":"Wed, 06 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-07","dateLabel":"Thu, 07 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-01-07","dateLabel":"Thu, 07 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-08","dateLabel":"Fri, 08 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-01-08","dateLabel":"Fri, 08 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-01-11","dateLabel":"Mon, 11 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-11","dateLabel":"Mon, 11 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-12","dateLabel":"Tue, 12 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-12","dateLabel":"Tue, 12 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-01-13","dateLabel":"Wed, 13 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-13","dateLabel":"Wed, 13 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-14","dateLabel":"Thu, 14 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-01-14","dateLabel":"Thu, 14 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-15","dateLabel":"Fri, 15 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-01-15","dateLabel":"Fri, 15 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-01-18","dateLabel":"Mon, 18 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-18","dateLabel":"Mon, 18 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-19","dateLabel":"Tue, 19 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-19","dateLabel":"Tue, 19 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-01-20","dateLabel":"Wed, 20 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-20","dateLabel":"Wed, 20 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-21","dateLabel":"Thu, 21 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-01-21","dateLabel":"Thu, 21 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-22","dateLabel":"Fri, 22 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-01-22","dateLabel":"Fri, 22 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-01-25","dateLabel":"Mon, 25 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-25","dateLabel":"Mon, 25 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-26","dateLabel":"Tue, 26 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-26","dateLabel":"Tue, 26 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-01-27","dateLabel":"Wed, 27 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-01-27","dateLabel":"Wed, 27 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-28","dateLabel":"Thu, 28 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-01-28","dateLabel":"Thu, 28 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-01-29","dateLabel":"Fri, 29 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-01-29","dateLabel":"Fri, 29 Jan 2027","month":"Jan 2027","monthKey":"2027-01","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-02-01","dateLabel":"Mon, 01 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-01","dateLabel":"Mon, 01 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-02","dateLabel":"Tue, 02 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-02","dateLabel":"Tue, 02 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-02-03","dateLabel":"Wed, 03 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-03","dateLabel":"Wed, 03 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-04","dateLabel":"Thu, 04 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-02-04","dateLabel":"Thu, 04 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-05","dateLabel":"Fri, 05 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-02-05","dateLabel":"Fri, 05 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-02-08","dateLabel":"Mon, 08 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-08","dateLabel":"Mon, 08 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-09","dateLabel":"Tue, 09 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-09","dateLabel":"Tue, 09 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-02-10","dateLabel":"Wed, 10 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-10","dateLabel":"Wed, 10 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-11","dateLabel":"Thu, 11 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-02-11","dateLabel":"Thu, 11 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-12","dateLabel":"Fri, 12 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-02-12","dateLabel":"Fri, 12 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-02-15","dateLabel":"Mon, 15 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-15","dateLabel":"Mon, 15 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-16","dateLabel":"Tue, 16 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-16","dateLabel":"Tue, 16 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-02-17","dateLabel":"Wed, 17 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-17","dateLabel":"Wed, 17 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-18","dateLabel":"Thu, 18 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-02-18","dateLabel":"Thu, 18 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-19","dateLabel":"Fri, 19 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-02-19","dateLabel":"Fri, 19 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-02-22","dateLabel":"Mon, 22 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-22","dateLabel":"Mon, 22 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-23","dateLabel":"Tue, 23 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-23","dateLabel":"Tue, 23 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-02-24","dateLabel":"Wed, 24 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-02-24","dateLabel":"Wed, 24 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-25","dateLabel":"Thu, 25 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-02-25","dateLabel":"Thu, 25 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-02-26","dateLabel":"Fri, 26 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-02-26","dateLabel":"Fri, 26 Feb 2027","month":"Feb 2027","monthKey":"2027-02","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-03-01","dateLabel":"Mon, 01 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-01","dateLabel":"Mon, 01 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-02","dateLabel":"Tue, 02 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-02","dateLabel":"Tue, 02 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-03-03","dateLabel":"Wed, 03 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-03","dateLabel":"Wed, 03 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-04","dateLabel":"Thu, 04 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-03-04","dateLabel":"Thu, 04 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-05","dateLabel":"Fri, 05 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-03-05","dateLabel":"Fri, 05 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-03-08","dateLabel":"Mon, 08 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-08","dateLabel":"Mon, 08 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-09","dateLabel":"Tue, 09 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-09","dateLabel":"Tue, 09 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-03-10","dateLabel":"Wed, 10 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-10","dateLabel":"Wed, 10 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-11","dateLabel":"Thu, 11 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-03-11","dateLabel":"Thu, 11 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-12","dateLabel":"Fri, 12 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-03-12","dateLabel":"Fri, 12 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-03-15","dateLabel":"Mon, 15 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-15","dateLabel":"Mon, 15 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-16","dateLabel":"Tue, 16 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-16","dateLabel":"Tue, 16 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-03-17","dateLabel":"Wed, 17 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-17","dateLabel":"Wed, 17 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-18","dateLabel":"Thu, 18 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-03-18","dateLabel":"Thu, 18 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-19","dateLabel":"Fri, 19 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-03-19","dateLabel":"Fri, 19 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-03-22","dateLabel":"Mon, 22 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-22","dateLabel":"Mon, 22 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-23","dateLabel":"Tue, 23 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-23","dateLabel":"Tue, 23 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-03-24","dateLabel":"Wed, 24 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-24","dateLabel":"Wed, 24 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-25","dateLabel":"Thu, 25 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-03-25","dateLabel":"Thu, 25 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-26","dateLabel":"Fri, 26 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-03-26","dateLabel":"Fri, 26 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-03-29","dateLabel":"Mon, 29 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-29","dateLabel":"Mon, 29 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-03-30","dateLabel":"Tue, 30 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-30","dateLabel":"Tue, 30 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-03-31","dateLabel":"Wed, 31 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-03-31","dateLabel":"Wed, 31 Mar 2027","month":"Mar 2027","monthKey":"2027-03","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-01","dateLabel":"Thu, 01 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-04-01","dateLabel":"Thu, 01 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-02","dateLabel":"Fri, 02 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-04-02","dateLabel":"Fri, 02 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-04-05","dateLabel":"Mon, 05 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-05","dateLabel":"Mon, 05 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-06","dateLabel":"Tue, 06 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-06","dateLabel":"Tue, 06 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-04-07","dateLabel":"Wed, 07 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-07","dateLabel":"Wed, 07 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-08","dateLabel":"Thu, 08 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-04-08","dateLabel":"Thu, 08 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-09","dateLabel":"Fri, 09 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-04-09","dateLabel":"Fri, 09 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-04-12","dateLabel":"Mon, 12 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-12","dateLabel":"Mon, 12 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-13","dateLabel":"Tue, 13 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-13","dateLabel":"Tue, 13 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-04-14","dateLabel":"Wed, 14 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-14","dateLabel":"Wed, 14 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-15","dateLabel":"Thu, 15 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-04-15","dateLabel":"Thu, 15 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-16","dateLabel":"Fri, 16 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-04-16","dateLabel":"Fri, 16 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-04-19","dateLabel":"Mon, 19 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-19","dateLabel":"Mon, 19 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-20","dateLabel":"Tue, 20 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-20","dateLabel":"Tue, 20 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-04-21","dateLabel":"Wed, 21 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-21","dateLabel":"Wed, 21 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-22","dateLabel":"Thu, 22 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-04-22","dateLabel":"Thu, 22 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-23","dateLabel":"Fri, 23 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-04-23","dateLabel":"Fri, 23 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-04-26","dateLabel":"Mon, 26 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-26","dateLabel":"Mon, 26 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-27","dateLabel":"Tue, 27 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-27","dateLabel":"Tue, 27 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-04-28","dateLabel":"Wed, 28 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-04-28","dateLabel":"Wed, 28 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-29","dateLabel":"Thu, 29 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-04-29","dateLabel":"Thu, 29 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-04-30","dateLabel":"Fri, 30 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-04-30","dateLabel":"Fri, 30 Apr 2027","month":"Apr 2027","monthKey":"2027-04","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-05-03","dateLabel":"Mon, 03 May 2027","month":"May 2027","monthKey":"2027-05","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-03","dateLabel":"Mon, 03 May 2027","month":"May 2027","monthKey":"2027-05","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-04","dateLabel":"Tue, 04 May 2027","month":"May 2027","monthKey":"2027-05","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-04","dateLabel":"Tue, 04 May 2027","month":"May 2027","monthKey":"2027-05","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-05-05","dateLabel":"Wed, 05 May 2027","month":"May 2027","monthKey":"2027-05","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-05","dateLabel":"Wed, 05 May 2027","month":"May 2027","monthKey":"2027-05","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-06","dateLabel":"Thu, 06 May 2027","month":"May 2027","monthKey":"2027-05","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-05-06","dateLabel":"Thu, 06 May 2027","month":"May 2027","monthKey":"2027-05","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-07","dateLabel":"Fri, 07 May 2027","month":"May 2027","monthKey":"2027-05","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-05-07","dateLabel":"Fri, 07 May 2027","month":"May 2027","monthKey":"2027-05","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-05-10","dateLabel":"Mon, 10 May 2027","month":"May 2027","monthKey":"2027-05","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-10","dateLabel":"Mon, 10 May 2027","month":"May 2027","monthKey":"2027-05","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-11","dateLabel":"Tue, 11 May 2027","month":"May 2027","monthKey":"2027-05","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-11","dateLabel":"Tue, 11 May 2027","month":"May 2027","monthKey":"2027-05","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-05-12","dateLabel":"Wed, 12 May 2027","month":"May 2027","monthKey":"2027-05","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-12","dateLabel":"Wed, 12 May 2027","month":"May 2027","monthKey":"2027-05","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-13","dateLabel":"Thu, 13 May 2027","month":"May 2027","monthKey":"2027-05","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-05-13","dateLabel":"Thu, 13 May 2027","month":"May 2027","monthKey":"2027-05","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-14","dateLabel":"Fri, 14 May 2027","month":"May 2027","monthKey":"2027-05","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-05-14","dateLabel":"Fri, 14 May 2027","month":"May 2027","monthKey":"2027-05","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-05-17","dateLabel":"Mon, 17 May 2027","month":"May 2027","monthKey":"2027-05","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-17","dateLabel":"Mon, 17 May 2027","month":"May 2027","monthKey":"2027-05","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-18","dateLabel":"Tue, 18 May 2027","month":"May 2027","monthKey":"2027-05","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-18","dateLabel":"Tue, 18 May 2027","month":"May 2027","monthKey":"2027-05","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-05-19","dateLabel":"Wed, 19 May 2027","month":"May 2027","monthKey":"2027-05","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-19","dateLabel":"Wed, 19 May 2027","month":"May 2027","monthKey":"2027-05","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-20","dateLabel":"Thu, 20 May 2027","month":"May 2027","monthKey":"2027-05","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-05-20","dateLabel":"Thu, 20 May 2027","month":"May 2027","monthKey":"2027-05","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-21","dateLabel":"Fri, 21 May 2027","month":"May 2027","monthKey":"2027-05","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-05-21","dateLabel":"Fri, 21 May 2027","month":"May 2027","monthKey":"2027-05","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-05-24","dateLabel":"Mon, 24 May 2027","month":"May 2027","monthKey":"2027-05","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-24","dateLabel":"Mon, 24 May 2027","month":"May 2027","monthKey":"2027-05","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-25","dateLabel":"Tue, 25 May 2027","month":"May 2027","monthKey":"2027-05","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-25","dateLabel":"Tue, 25 May 2027","month":"May 2027","monthKey":"2027-05","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-05-26","dateLabel":"Wed, 26 May 2027","month":"May 2027","monthKey":"2027-05","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-26","dateLabel":"Wed, 26 May 2027","month":"May 2027","monthKey":"2027-05","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-27","dateLabel":"Thu, 27 May 2027","month":"May 2027","monthKey":"2027-05","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-05-27","dateLabel":"Thu, 27 May 2027","month":"May 2027","monthKey":"2027-05","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-05-28","dateLabel":"Fri, 28 May 2027","month":"May 2027","monthKey":"2027-05","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-05-28","dateLabel":"Fri, 28 May 2027","month":"May 2027","monthKey":"2027-05","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-05-31","dateLabel":"Mon, 31 May 2027","month":"May 2027","monthKey":"2027-05","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-05-31","dateLabel":"Mon, 31 May 2027","month":"May 2027","monthKey":"2027-05","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-01","dateLabel":"Tue, 01 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-01","dateLabel":"Tue, 01 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-06-02","dateLabel":"Wed, 02 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-02","dateLabel":"Wed, 02 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-03","dateLabel":"Thu, 03 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-06-03","dateLabel":"Thu, 03 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-04","dateLabel":"Fri, 04 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-06-04","dateLabel":"Fri, 04 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-06-07","dateLabel":"Mon, 07 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-07","dateLabel":"Mon, 07 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-08","dateLabel":"Tue, 08 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-08","dateLabel":"Tue, 08 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-06-09","dateLabel":"Wed, 09 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-09","dateLabel":"Wed, 09 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-10","dateLabel":"Thu, 10 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-06-10","dateLabel":"Thu, 10 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-11","dateLabel":"Fri, 11 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-06-11","dateLabel":"Fri, 11 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-06-14","dateLabel":"Mon, 14 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-14","dateLabel":"Mon, 14 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-15","dateLabel":"Tue, 15 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-15","dateLabel":"Tue, 15 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-06-16","dateLabel":"Wed, 16 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-16","dateLabel":"Wed, 16 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-17","dateLabel":"Thu, 17 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-06-17","dateLabel":"Thu, 17 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-18","dateLabel":"Fri, 18 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-06-18","dateLabel":"Fri, 18 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-06-21","dateLabel":"Mon, 21 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-21","dateLabel":"Mon, 21 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-22","dateLabel":"Tue, 22 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-22","dateLabel":"Tue, 22 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-06-23","dateLabel":"Wed, 23 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-23","dateLabel":"Wed, 23 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-24","dateLabel":"Thu, 24 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-06-24","dateLabel":"Thu, 24 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-25","dateLabel":"Fri, 25 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-06-25","dateLabel":"Fri, 25 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-06-28","dateLabel":"Mon, 28 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-28","dateLabel":"Mon, 28 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-06-29","dateLabel":"Tue, 29 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-29","dateLabel":"Tue, 29 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-06-30","dateLabel":"Wed, 30 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-06-30","dateLabel":"Wed, 30 Jun 2027","month":"Jun 2027","monthKey":"2027-06","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-01","dateLabel":"Thu, 01 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-07-01","dateLabel":"Thu, 01 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-02","dateLabel":"Fri, 02 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-07-02","dateLabel":"Fri, 02 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-07-05","dateLabel":"Mon, 05 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-05","dateLabel":"Mon, 05 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-06","dateLabel":"Tue, 06 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-06","dateLabel":"Tue, 06 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-07-07","dateLabel":"Wed, 07 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-07","dateLabel":"Wed, 07 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-08","dateLabel":"Thu, 08 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-07-08","dateLabel":"Thu, 08 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-09","dateLabel":"Fri, 09 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-07-09","dateLabel":"Fri, 09 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-07-12","dateLabel":"Mon, 12 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-12","dateLabel":"Mon, 12 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-13","dateLabel":"Tue, 13 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-13","dateLabel":"Tue, 13 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-07-14","dateLabel":"Wed, 14 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-14","dateLabel":"Wed, 14 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-15","dateLabel":"Thu, 15 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-07-15","dateLabel":"Thu, 15 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-16","dateLabel":"Fri, 16 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-07-16","dateLabel":"Fri, 16 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-07-19","dateLabel":"Mon, 19 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-19","dateLabel":"Mon, 19 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-20","dateLabel":"Tue, 20 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-20","dateLabel":"Tue, 20 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-07-21","dateLabel":"Wed, 21 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-21","dateLabel":"Wed, 21 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-22","dateLabel":"Thu, 22 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-07-22","dateLabel":"Thu, 22 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-23","dateLabel":"Fri, 23 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-07-23","dateLabel":"Fri, 23 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-07-26","dateLabel":"Mon, 26 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-26","dateLabel":"Mon, 26 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-27","dateLabel":"Tue, 27 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-27","dateLabel":"Tue, 27 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-07-28","dateLabel":"Wed, 28 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-07-28","dateLabel":"Wed, 28 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-29","dateLabel":"Thu, 29 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-07-29","dateLabel":"Thu, 29 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-07-30","dateLabel":"Fri, 30 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-07-30","dateLabel":"Fri, 30 Jul 2027","month":"Jul 2027","monthKey":"2027-07","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-08-02","dateLabel":"Mon, 02 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-02","dateLabel":"Mon, 02 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-03","dateLabel":"Tue, 03 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-03","dateLabel":"Tue, 03 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-08-04","dateLabel":"Wed, 04 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-04","dateLabel":"Wed, 04 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-05","dateLabel":"Thu, 05 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-08-05","dateLabel":"Thu, 05 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-06","dateLabel":"Fri, 06 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-08-06","dateLabel":"Fri, 06 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-08-09","dateLabel":"Mon, 09 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-09","dateLabel":"Mon, 09 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-10","dateLabel":"Tue, 10 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-10","dateLabel":"Tue, 10 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-08-11","dateLabel":"Wed, 11 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-11","dateLabel":"Wed, 11 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-12","dateLabel":"Thu, 12 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-08-12","dateLabel":"Thu, 12 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-13","dateLabel":"Fri, 13 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-08-13","dateLabel":"Fri, 13 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-08-16","dateLabel":"Mon, 16 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-16","dateLabel":"Mon, 16 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-17","dateLabel":"Tue, 17 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-17","dateLabel":"Tue, 17 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-08-18","dateLabel":"Wed, 18 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-18","dateLabel":"Wed, 18 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-19","dateLabel":"Thu, 19 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-08-19","dateLabel":"Thu, 19 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-20","dateLabel":"Fri, 20 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-08-20","dateLabel":"Fri, 20 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-08-23","dateLabel":"Mon, 23 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-23","dateLabel":"Mon, 23 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-24","dateLabel":"Tue, 24 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-24","dateLabel":"Tue, 24 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"},{"date":"2027-08-25","dateLabel":"Wed, 25 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Wednesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-25","dateLabel":"Wed, 25 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Wednesday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-26","dateLabel":"Thu, 26 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Thursday","subject":"Reading","time":"8:00\u20139:00 PM"},{"date":"2027-08-26","dateLabel":"Thu, 26 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Thursday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-27","dateLabel":"Fri, 27 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Friday","subject":"Chemistry","time":"8:00\u20139:00 PM"},{"date":"2027-08-27","dateLabel":"Fri, 27 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Friday","subject":"Physics","time":"9:00\u201310:00 PM"},{"date":"2027-08-30","dateLabel":"Mon, 30 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Monday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-30","dateLabel":"Mon, 30 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Monday","subject":"English","time":"9:00\u201310:00 PM"},{"date":"2027-08-31","dateLabel":"Tue, 31 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Tuesday","subject":"Math","time":"8:00\u20139:00 PM"},{"date":"2027-08-31","dateLabel":"Tue, 31 Aug 2027","month":"Aug 2027","monthKey":"2027-08","day":"Tuesday","subject":"Khmer","time":"9:00\u201310:00 PM"}];
+const allMonthKeys=[...new Set(sessions.map(s=>s.monthKey))].sort();
 
-const KEY = 'studyplan_v1';
-let sessions = [];
-let logState = {};   // { "date|subject": { status, score } }
-let logMonthIdx = 0;
-let logSubjFilter = 'All';
-let charts = {};
+function loadState(){try{logState=JSON.parse(localStorage.getItem(KEY)||'{}');}catch{logState={};}}
+function saveState(){localStorage.setItem(KEY,JSON.stringify(logState));}
+function sessionKey(s){return s.date+'|'+s.subject+'|'+s.time;}
+function getState(s){return logState[sessionKey(s)]||{};}
+function setState(s,data){logState[sessionKey(s)]={...getState(s),...data};saveState();}
+function todayISO(){return new Date().toISOString().slice(0,10);}
+function isoToDate(iso){return new Date(iso+'T00:00:00');}
 
-// ── Load state ──
-function loadState() {
-  try { logState = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { logState = {}; }
-}
-function saveState() { localStorage.setItem(KEY, JSON.stringify(logState)); }
-function sessionKey(s) { return s.date + '|' + s.subject + '|' + s.time; }
-function getState(s)   { return logState[sessionKey(s)] || {}; }
-function setState(s, data) {
-  logState[sessionKey(s)] = { ...getState(s), ...data };
-  saveState();
-}
-
-// ── Date helpers ──
-function todayISO() { return new Date().toISOString().slice(0,10); }
-function isoToDate(iso) { return new Date(iso + 'T00:00:00'); }
-function getMonthKey(iso) { return iso.slice(0,7); }
-
-// ── Load sessions JSON ──
-async function init() {
-  const r = await fetch('sessions.json');
-  sessions = await r.json();
+function init(){
   loadState();
-  renderAll();
-}
-
-function renderAll() {
-  renderTopbar();
+  document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  logMonthIdx=allMonthKeys.indexOf(todayISO().slice(0,7));
+  if(logMonthIdx<0)logMonthIdx=0;
   renderToday();
   renderLog();
-  renderCharts();
 }
 
-function renderTopbar() {
-  const now = new Date();
-  document.getElementById('topbar-date').textContent =
-    now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-}
-
-// ══ TODAY PAGE ══
-function renderToday() {
-  const today = todayISO();
-  const todays = sessions.filter(s => s.date === today);
-  const container = document.getElementById('today-sessions');
-
-  // Stats
-  const weekStart = (() => {
-    const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1); return d.toISOString().slice(0,10);
-  })();
-  const weekEnd = (() => {
-    const d = new Date(); d.setDate(d.getDate() - d.getDay() + 5); return d.toISOString().slice(0,10);
-  })();
-  const weekDone = sessions.filter(s => s.date >= weekStart && s.date <= weekEnd && getState(s).status === 'done').length;
-  const totalDone = sessions.filter(s => getState(s).status === 'done').length;
-
-  // Streak
-  let streak = 0;
-  const uniqueDays = [...new Set(sessions.map(s=>s.date))].sort().reverse();
-  for (const day of uniqueDays) {
-    const daySessions = sessions.filter(s=>s.date===day);
-    const anyDone = daySessions.some(s=>getState(s).status==='done');
-    if (anyDone) streak++;
-    else if (day <= today) break;
+function renderToday(){
+  const today=todayISO();
+  const todays=sessions.filter(s=>s.date===today);
+  const d=new Date();
+  const wd=d.getDay();
+  const mon=new Date(d);mon.setDate(d.getDate()-(wd===0?6:wd-1));
+  const fri=new Date(mon);fri.setDate(mon.getDate()+4);
+  const monISO=mon.toISOString().slice(0,10);
+  const friISO=fri.toISOString().slice(0,10);
+  const weekDone=sessions.filter(s=>s.date>=monISO&&s.date<=friISO&&getState(s).status==='done').length;
+  const totalDone=sessions.filter(s=>getState(s).status==='done').length;
+  let streak=0;
+  const uniqueDays=[...new Set(sessions.map(s=>s.date))].sort().reverse();
+  for(const day of uniqueDays){
+    const ds=sessions.filter(s=>s.date===day);
+    if(ds.some(s=>getState(s).status==='done'))streak++;
+    else if(day<=today)break;
   }
-
-  document.getElementById('stat-week-done').textContent = weekDone;
-  document.getElementById('stat-streak').textContent = streak;
-  document.getElementById('stat-total').textContent = totalDone;
-
-  // Motivate
-  const quotes = [
-    "Let's go! Check off your sessions tonight. 🎯",
-    "You're building a habit. Keep it up! 💪",
-    "Every session counts. Don't stop now! 🚀",
-    "Your future self will thank you. ✨",
-    "Consistency beats talent. Stay the course! 🏆",
-    `${totalDone} sessions done — you're on fire! 🔥`,
-  ];
-  const qi = Math.min(Math.floor(totalDone / 20), quotes.length - 1);
-  document.getElementById('motivate-text').textContent = quotes[qi];
-
-  if (todays.length === 0) {
-    container.innerHTML = `
-      <div class="card rest-card">
-        <div class="emoji">😴</div>
-        <h2>Rest Day!</h2>
-        <p>No sessions today. Relax and recharge.</p>
-      </div>`;
+  document.getElementById('stat-week-done').textContent=weekDone;
+  document.getElementById('stat-streak').textContent=streak;
+  document.getElementById('stat-total').textContent=totalDone;
+  const quotes=["Let's go! Check off your sessions tonight. 🎯","You're building a habit. Keep it up! 💪","Every session counts. Don't stop now! 🚀","Your future self will thank you. ✨","Consistency beats talent. Stay the course! 🏆",totalDone+" sessions done — you're on fire! 🔥"];
+  document.getElementById('motivate-text').textContent=quotes[Math.min(Math.floor(totalDone/20),quotes.length-1)];
+  const container=document.getElementById('today-sessions');
+  if(!todays.length){
+    container.innerHTML='<div class="card rest-card"><div class="emoji">😴</div><h2>Rest Day!</h2><p>No sessions today. Relax and recharge.</p></div>';
     return;
   }
-
-  container.innerHTML = todays.map((s, idx) => {
-    const st = getState(s);
-    const stars = [1,2,3,4,5,6,7,8,9,10].map(n => {
-      const filled = (st.score || 0) >= n;
-      return `<button class="star-btn" onclick="setScore('${sessionKey(s)}',${n})" title="${n}/10">${filled?'⭐':'☆'}</button>`;
-    }).join('');
-    return `
-    <div class="session-card" id="scard-${idx}" style="background:${SUBJ_LIGHT[s.subject]}">
+  container.innerHTML=todays.map((s,idx)=>{
+    const st=getState(s);
+    const stars=[1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="star-btn" onclick="setScore('${sessionKey(s)}',${n})">${(st.score||0)>=n?'⭐':'☆'}</button>`).join('');
+    return`<div class="session-card" style="background:${SUBJ_LIGHT[s.subject]}">
       <div class="session-top">
         <span class="subj-dot" style="background:${SUBJ_COLOR[s.subject]}"></span>
         <span class="subj-name" style="color:${SUBJ_COLOR[s.subject]}">${s.subject}</span>
         <span class="subj-time">${s.time}</span>
       </div>
       <div class="session-actions">
-        <button class="btn-done ${st.status==='done'?'active':''}" onclick="markSession('${sessionKey(s)}','done',${idx})">✅ Done</button>
-        <button class="btn-miss ${st.status==='miss'?'active':''}" onclick="markSession('${sessionKey(s)}','miss',${idx})">❌ Missed</button>
-        <button class="btn-skip ${st.status==='skip'?'active':''}" onclick="markSession('${sessionKey(s)}','skip',${idx})">⏭ Skip</button>
+        <button class="btn-done${st.status==='done'?' active':''}" onclick="markSession('${sessionKey(s)}','done')">✅ Done</button>
+        <button class="btn-miss${st.status==='miss'?' active':''}" onclick="markSession('${sessionKey(s)}','miss')">❌ Missed</button>
+        <button class="btn-skip${st.status==='skip'?' active':''}" onclick="markSession('${sessionKey(s)}','skip')">⏭ Skip</button>
       </div>
-      <div class="score-row" id="score-row-${idx}" style="${st.status==='done'?'':'display:none'">
+      <div class="score-row" style="${st.status==='done'?'':'display:none'}">
         <span>Score:</span>${stars}
       </div>
     </div>`;
   }).join('');
 }
 
-function markSession(key, status, idx) {
-  const parts = key.split('|');
-  const s = sessions.find(x => sessionKey(x) === key);
-  if (!s) return;
-  setState(s, { status });
-  renderToday();
-  renderLog();
-  updateCharts();
+function markSession(key,status){
+  const s=sessions.find(x=>sessionKey(x)===key);
+  if(s){setState(s,{status});renderToday();renderLog();}
+}
+function setScore(key,score){
+  const s=sessions.find(x=>sessionKey(x)===key);
+  if(s){setState(s,{score});renderToday();}
 }
 
-function setScore(key, score) {
-  const s = sessions.find(x => sessionKey(x) === key);
-  if (!s) return;
-  setState(s, { score });
-  renderToday();
-  updateCharts();
-}
-
-// ══ LOG PAGE ══
-const allMonthKeys = [...new Set(sessions.map(s=>s.monthKey))].sort();
-
-function renderLogPills() {
-  const p = document.getElementById('subj-pills');
-  const all = ['All', ...SUBJECTS];
-  p.innerHTML = all.map(sub => {
-    const col = sub==='All' ? '#1A237E' : SUBJ_COLOR[sub];
-    const active = logSubjFilter === sub;
-    return `<span class="pill ${active?'active':''}"
-      style="${active?`background:${col};color:#fff`:`color:${col};border-color:${col}`}"
-      onclick="setSubjFilter('${sub}')">${sub}</span>`;
+function renderLogPills(){
+  const p=document.getElementById('subj-pills');
+  p.innerHTML=['All',...SUBJECTS].map(sub=>{
+    const col=sub==='All'?'#1A237E':SUBJ_COLOR[sub];
+    const active=logSubjFilter===sub;
+    return`<span class="pill" style="${active?`background:${col};color:#fff`:`color:${col};border-color:${col}`}" onclick="setSubjFilter('${sub}')">${sub}</span>`;
   }).join('');
 }
+function setSubjFilter(sub){logSubjFilter=sub;renderLog();}
 
-function setSubjFilter(sub) { logSubjFilter = sub; renderLog(); }
-
-function renderLog() {
+function renderLog(){
   renderLogPills();
-  const monthKey = allMonthKeys[logMonthIdx] || allMonthKeys[0];
-  document.getElementById('log-month-label').textContent =
-    isoToDate(monthKey + '-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
-
-  let filtered = sessions.filter(s => s.monthKey === monthKey);
-  if (logSubjFilter !== 'All') filtered = filtered.filter(s=>s.subject===logSubjFilter);
-
-  const list = document.getElementById('log-list');
-  if (!filtered.length) {
-    list.innerHTML = '<p style="text-align:center;color:#9E9E9E;padding:20px 0">No sessions this month</p>';
-    return;
-  }
-
-  list.innerHTML = filtered.map(s => {
-    const st = getState(s);
-    const statusMap = {
-      done: ['✅ Done','status-done'],
-      miss: ['❌ Missed','status-miss'],
-      skip: ['⏭ Skipped','status-skip'],
-    };
-    const [label, cls] = statusMap[st.status] || ['— Pending','status-none'];
-    const scoreStr = st.score ? ` · ⭐${st.score}/10` : '';
-    return `
-    <div class="log-item">
+  const monthKey=allMonthKeys[logMonthIdx]||allMonthKeys[0];
+  document.getElementById('log-month-label').textContent=isoToDate(monthKey+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  let filtered=sessions.filter(s=>s.monthKey===monthKey);
+  if(logSubjFilter!=='All')filtered=filtered.filter(s=>s.subject===logSubjFilter);
+  const list=document.getElementById('log-list');
+  if(!filtered.length){list.innerHTML='<p style="text-align:center;color:#9E9E9E;padding:20px 0">No sessions this month</p>';return;}
+  const statusMap={done:['✅ Done','status-done'],miss:['❌ Missed','status-miss'],skip:['⏭ Skipped','status-skip']};
+  list.innerHTML=filtered.map(s=>{
+    const st=getState(s);
+    const[label,cls]=statusMap[st.status]||['— Pending','status-none'];
+    return`<div class="log-item">
       <span class="log-dot" style="background:${SUBJ_COLOR[s.subject]}"></span>
       <div class="log-info">
-        <div class="log-date">${s.dateLabel}${scoreStr}</div>
+        <div class="log-date">${s.dateLabel}${st.score?' · ⭐'+st.score+'/10':''}</div>
         <div class="log-subj" style="color:${SUBJ_COLOR[s.subject]}">${s.subject} · ${s.time}</div>
       </div>
       <span class="log-status ${cls}">${label}</span>
     </div>`;
   }).join('');
 }
+function changeLogMonth(dir){logMonthIdx=Math.max(0,Math.min(allMonthKeys.length-1,logMonthIdx+dir));renderLog();}
 
-function changeLogMonth(dir) {
-  logMonthIdx = Math.max(0, Math.min(allMonthKeys.length-1, logMonthIdx+dir));
-  renderLog();
-}
-
-// ══ CHARTS ══
-function buildChartData() {
-  const monthDone = {};  // monthKey → { subj: count }
-  const monthScore = {}; // monthKey → [scores]
-  const monthTotal = {}; // monthKey → total scheduled
-  const subjTotal = {};  // subj → count done
-
-  for (const s of sessions) {
-    monthTotal[s.monthKey] = (monthTotal[s.monthKey]||0) + 1;
-    const st = getState(s);
-    if (st.status === 'done') {
-      if (!monthDone[s.monthKey]) monthDone[s.monthKey]={};
-      monthDone[s.monthKey][s.subject] = (monthDone[s.monthKey][s.subject]||0)+1;
-      subjTotal[s.subject] = (subjTotal[s.subject]||0)+1;
-      if (st.score) {
-        if (!monthScore[s.monthKey]) monthScore[s.monthKey]=[];
-        monthScore[s.monthKey].push(st.score);
-      }
+function buildChartData(){
+  const monthDone={},monthScore={},monthTotal={},subjTotal={};
+  for(const s of sessions){
+    monthTotal[s.monthKey]=(monthTotal[s.monthKey]||0)+1;
+    const st=getState(s);
+    if(st.status==='done'){
+      if(!monthDone[s.monthKey])monthDone[s.monthKey]={};
+      monthDone[s.monthKey][s.subject]=(monthDone[s.monthKey][s.subject]||0)+1;
+      subjTotal[s.subject]=(subjTotal[s.subject]||0)+1;
+      if(st.score){if(!monthScore[s.monthKey])monthScore[s.monthKey]=[];monthScore[s.monthKey].push(st.score);}
     }
   }
-  return { monthDone, monthScore, monthTotal, subjTotal };
+  return{monthDone,monthScore,monthTotal,subjTotal};
 }
 
-function renderCharts() {
-  const { monthDone, monthScore, monthTotal, subjTotal } = buildChartData();
-  const labels = allMonthKeys.map(k =>
-    isoToDate(k+'-01').toLocaleDateString('en-GB',{month:'short',year:'2-digit'}));
+function renderCharts(){
+  const{monthDone,monthScore,monthTotal,subjTotal}=buildChartData();
+  const labels=allMonthKeys.map(k=>isoToDate(k+'-01').toLocaleDateString('en-GB',{month:'short',year:'2-digit'}));
+  const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,font:{size:11}}}},scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'#F0F0F0'}}}};
 
-  const chartDefaults = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: true, position: 'bottom',
-      labels: { boxWidth: 10, font: { size: 11 } } } },
-    scales: {
-      x: { ticks: { font: { size: 10 } }, grid: { display: false } },
-      y: { ticks: { font: { size: 10 } }, grid: { color: '#F0F0F0' } }
-    }
-  };
-
-  // Chart 1: Stacked bar by subject per month
   charts.monthly?.destroy();
-  charts.monthly = new Chart(document.getElementById('chart-monthly'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: SUBJECTS.map((subj, i) => ({
-        label: subj,
-        data: allMonthKeys.map(k => (monthDone[k]||{})[subj]||0),
-        backgroundColor: BAR_COLORS[i] + 'CC',
-        borderRadius: 3,
-      }))
-    },
-    options: { ...chartDefaults,
-      scales: { ...chartDefaults.scales,
-        x: { ...chartDefaults.scales.x, stacked: true },
-        y: { ...chartDefaults.scales.y, stacked: true }
-      }
-    }
-  });
+  charts.monthly=new Chart(document.getElementById('chart-monthly'),{type:'bar',data:{labels,datasets:SUBJECTS.map((s,i)=>({label:s,data:allMonthKeys.map(k=>(monthDone[k]||{})[s]||0),backgroundColor:BAR_COLORS[i]+'CC',borderRadius:3}))},options:{...base,scales:{...base.scales,x:{...base.scales.x,stacked:true},y:{...base.scales.y,stacked:true}}}});
 
-  // Chart 2: Avg score line
   charts.score?.destroy();
-  charts.score = new Chart(document.getElementById('chart-score'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Avg Score',
-        data: allMonthKeys.map(k => {
-          const arr = monthScore[k]||[];
-          return arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : null;
-        }),
-        borderColor: '#C2185B', backgroundColor: '#C2185B22',
-        tension: 0.4, fill: true, pointRadius: 4,
-        spanGaps: true,
-      }]
-    },
-    options: { ...chartDefaults,
-      plugins: { ...chartDefaults.plugins, legend: { display: false } },
-      scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, min:0, max:10 } }
-    }
-  });
+  charts.score=new Chart(document.getElementById('chart-score'),{type:'line',data:{labels,datasets:[{label:'Avg Score',data:allMonthKeys.map(k=>{const a=monthScore[k]||[];return a.length?(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1):null;}),borderColor:'#C2185B',backgroundColor:'#C2185B22',tension:0.4,fill:true,pointRadius:4,spanGaps:true}]},options:{...base,plugins:{...base.plugins,legend:{display:false}},scales:{...base.scales,y:{...base.scales.y,min:0,max:10}}}});
 
-  // Chart 3: % complete per month
   charts.complete?.destroy();
-  charts.complete = new Chart(document.getElementById('chart-complete'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: '% Done',
-        data: allMonthKeys.map(k => {
-          const done = Object.values(monthDone[k]||{}).reduce((a,b)=>a+b,0);
-          const total = monthTotal[k]||1;
-          return Math.round(done/total*100);
-        }),
-        borderColor: '#1565C0', backgroundColor: '#1565C022',
-        tension: 0.4, fill: true, pointRadius: 4,
-      }]
-    },
-    options: { ...chartDefaults,
-      plugins: { ...chartDefaults.plugins, legend: { display: false } },
-      scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, min:0, max:100,
-        ticks: { callback: v => v+'%', font:{size:10} } } }
-    }
-  });
+  charts.complete=new Chart(document.getElementById('chart-complete'),{type:'line',data:{labels,datasets:[{label:'% Done',data:allMonthKeys.map(k=>{const done=Object.values(monthDone[k]||{}).reduce((a,b)=>a+b,0);return Math.round(done/(monthTotal[k]||1)*100);}),borderColor:'#1565C0',backgroundColor:'#1565C022',tension:0.4,fill:true,pointRadius:4}]},options:{...base,plugins:{...base.plugins,legend:{display:false}},scales:{...base.scales,y:{...base.scales.y,min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}}}}}});
 
-  // Chart 4: By subject total
   charts.subject?.destroy();
-  charts.subject = new Chart(document.getElementById('chart-subject'), {
-    type: 'bar',
-    data: {
-      labels: SUBJECTS,
-      datasets: [{
-        data: SUBJECTS.map(s=>subjTotal[s]||0),
-        backgroundColor: BAR_COLORS.map(c=>c+'CC'),
-        borderRadius: 6,
-      }]
-    },
-    options: { ...chartDefaults,
-      plugins: { ...chartDefaults.plugins, legend: { display: false } },
-    }
-  });
+  charts.subject=new Chart(document.getElementById('chart-subject'),{type:'bar',data:{labels:SUBJECTS,datasets:[{data:SUBJECTS.map(s=>subjTotal[s]||0),backgroundColor:BAR_COLORS.map(c=>c+'CC'),borderRadius:6}]},options:{...base,plugins:{...base.plugins,legend:{display:false}}}});
 }
 
-function updateCharts() { renderCharts(); }
-
-function showPage(id, btn) {
+function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
-  if (id==='progress') renderCharts();
+  if(id==='progress')renderCharts();
 }
-
-// Set log month to current month by default
-logMonthIdx = allMonthKeys.indexOf(todayISO().slice(0,7));
-if (logMonthIdx < 0) logMonthIdx = 0;
 
 init();
 </script>
-<script>if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
 </body>
 </html>
