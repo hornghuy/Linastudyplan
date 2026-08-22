@@ -434,12 +434,27 @@ let pendingPhotoData = null;
 let photoSubjFilter = 'All';
 let photoUploading = false;
 
+async function findBucket() {
+  // Try all possible bucket name variants
+  const variants = ['STUDY-PHOTOS','study-photos','STUDY PLAN','study_photos','studyphotos'];
+  for(const name of variants){
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${name}`,{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},
+      body:JSON.stringify({prefix:'',limit:1})
+    });
+    if(r.ok || r.status===200){ console.log('Found bucket:',name); return name; }
+  }
+  return 'STUDY-PHOTOS';
+}
+
 async function uploadToSupabase(file, subject) {
+  const realBucket = await findBucket();
   const ext = (file.name || 'photo.jpg').split('.').pop();
   const date = todayISO();
   const ts = Date.now();
   const path = `${date}/${subject.replace(/ /g,'_')}_${ts}.${ext}`;
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${realBucket}/${path}`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': file.type||'image/jpeg', 'x-upsert': 'true' },
     body: file,
@@ -449,7 +464,8 @@ async function uploadToSupabase(file, subject) {
 }
 
 async function fetchPhotosFromSupabase() {
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
+  const realBucket = await findBucket();
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${realBucket}`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ prefix:'', limit:500, offset:0, sortBy:{ column:'created_at', order:'desc' } }),
@@ -464,12 +480,13 @@ async function fetchPhotosFromSupabase() {
     const subject = subjMatch ? subjMatch[1].replace(/_/g,' ') : 'General';
     let dateLabel = datePart;
     try { dateLabel = isoToDate(datePart).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}); } catch{}
-    return { path:f.name, publicUrl:`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${f.name}`, subject, date:datePart, dateLabel, created:f.created_at||'' };
+    return { path:f.name, bucket:realBucket, publicUrl:`${SUPABASE_URL}/storage/v1/object/public/${realBucket}/${f.name}`, subject, date:datePart, dateLabel, created:f.created_at||'' };
   }).sort((a,b)=>b.date.localeCompare(a.date)||b.created.localeCompare(a.created));
 }
 
 async function deleteFromSupabase(path) {
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}`, {
+  const realBucket = await findBucket();
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${realBucket}`, {
     method: 'DELETE',
     headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ prefixes:[path] }),
