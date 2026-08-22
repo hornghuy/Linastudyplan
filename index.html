@@ -425,63 +425,67 @@ function renderCharts(){
 
 
 // ══ PHOTOS ══
-const SUPABASE_URL = 'https://erxypkscgonqplszntxf.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyeHlwa3NjZ29ucXBsc3pudHhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNTQ0MDksImV4cCI6MjEwMjgzMDQwOX0.8yyLqsqYorDwR8InCE6JBfS8TmRE8J2lWQQR-eHOJOw';
-const BUCKET = 'STUDY-PHOTOS';
+const SURL = 'https://erxypkscgonqplszntxf.supabase.co';
+const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyeHlwa3NjZ29ucXBsc3pudHhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNTQ0MDksImV4cCI6MjEwMjgzMDQwOX0.8yyLqsqYorDwR8InCE6JBfS8TmRE8J2lWQQR-eHOJOw';
+const BKT  = 'STUDY-PHOTOS';
+const HDRS = {'Authorization':'Bearer '+SKEY,'apikey':SKEY};
+
 let photos = [];
 let pendingPhotoFile = null;
 let pendingPhotoData = null;
 let photoSubjFilter = 'All';
 let photoUploading = false;
 
-async function findBucket() {
-  return 'STUDY-PHOTOS'; // confirmed bucket name
-}
-
 async function uploadToSupabase(file, subject) {
-  const realBucket = await findBucket();
-  const ext = (file.name || 'photo.jpg').split('.').pop();
-  const date = todayISO();
-  const ts = Date.now();
-  const path = `${date}/${subject.replace(/ /g,'_')}_${ts}.${ext}`;
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${realBucket}/${path}`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': file.type||'image/jpeg', 'x-upsert': 'true' },
-    body: file,
+  const ext = 'jpg';
+  const safe = (subject||'General').replace(/[^a-zA-Z0-9]/g,'_');
+  const path = todayISO()+'/'+safe+'_'+Date.now()+'.'+ext;
+  const url  = SURL+'/storage/v1/object/'+BKT+'/'+path;
+  console.log('Uploading to:', url);
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{...HDRS,'Content-Type':'image/jpeg','x-upsert':'true'},
+    body: file
   });
-  if(!res.ok) throw new Error(await res.text());
-  return { path, publicUrl: `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}` };
+  const txt = await res.text();
+  console.log('Upload result:', res.status, txt);
+  if(!res.ok) throw new Error(txt);
+  return { path, publicUrl: SURL+'/storage/v1/object/public/'+BKT+'/'+path };
 }
 
 async function fetchPhotosFromSupabase() {
-  const realBucket = await findBucket();
-  const encodedBucket = encodeURIComponent(realBucket);
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${encodedBucket}`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prefix:'', limit:500, offset:0, sortBy:{ column:'created_at', order:'desc' } }),
+  const url = SURL+'/storage/v1/object/list/'+BKT;
+  console.log('Fetching photos from:', url);
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{...HDRS,'Content-Type':'application/json'},
+    body: JSON.stringify({prefix:'',limit:500,offset:0,sortBy:{column:'created_at',order:'desc'}})
   });
-  if(!res.ok) return [];
+  if(!res.ok){ console.log('Fetch failed:', res.status, await res.text()); return []; }
   const files = await res.json();
-  return files.filter(f=>f.name&&!f.name.endsWith('/')).map(f => {
+  console.log('Files:', files.length);
+  return (files||[]).filter(f=>f.name&&!f.name.endsWith('/')).map(f=>{
     const parts = f.name.split('/');
     const filename = parts[parts.length-1];
     const datePart = parts[0]||todayISO();
     const subjMatch = filename.match(/^([^_]+)/);
     const subject = subjMatch ? subjMatch[1].replace(/_/g,' ') : 'General';
-    let dateLabel = datePart;
-    try { dateLabel = isoToDate(datePart).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}); } catch{}
-    return { path:f.name, bucket:realBucket, publicUrl:`${SUPABASE_URL}/storage/v1/object/public/${encodedBucket}/${f.name}`, subject, date:datePart, dateLabel, created:f.created_at||'' };
+    let dateLabel=datePart;
+    try{dateLabel=isoToDate(datePart).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}catch{}
+    return {
+      path:f.name,
+      publicUrl:SURL+'/storage/v1/object/public/'+BKT+'/'+f.name,
+      subject, date:datePart, dateLabel,
+      created:f.created_at||''
+    };
   }).sort((a,b)=>b.date.localeCompare(a.date)||b.created.localeCompare(a.created));
 }
 
 async function deleteFromSupabase(path) {
-  const realBucket = await findBucket();
-  const encodedBucket = encodeURIComponent(realBucket);
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${encodedBucket}`, {
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prefixes:[path] }),
+  const res = await fetch(SURL+'/storage/v1/object/'+BKT, {
+    method:'DELETE',
+    headers:{...HDRS,'Content-Type':'application/json'},
+    body: JSON.stringify({prefixes:[path]})
   });
   return res.ok;
 }
@@ -502,9 +506,13 @@ function previewPhoto(e) {
   reader.readAsDataURL(file);
 }
 
-function dragOver(e){ e.preventDefault(); document.getElementById('upload-area').classList.add('drag'); }
-function dragLeave(){ document.getElementById('upload-area').classList.remove('drag'); }
-function dropFile(e){ e.preventDefault(); dragLeave(); const f=e.dataTransfer.files[0]; if(f){ pendingPhotoFile=f; previewPhoto({target:{files:[f]}}); } }
+function dragOver(e){e.preventDefault();document.getElementById('upload-area').classList.add('drag');}
+function dragLeave(){document.getElementById('upload-area').classList.remove('drag');}
+function dropFile(e){
+  e.preventDefault();dragLeave();
+  const f=e.dataTransfer.files[0];
+  if(f){pendingPhotoFile=f;previewPhoto({target:{files:[f]}});}
+}
 
 async function savePhoto() {
   if(!pendingPhotoFile||photoUploading) return;
@@ -522,47 +530,47 @@ async function savePhoto() {
     pendingPhotoData=null; pendingPhotoFile=null;
     await loadAndRenderPhotos();
   } catch(err) {
-    alert('Upload failed 😢\nMake sure your bucket policy allows anon uploads.\n'+err.message);
+    alert('Upload failed 😢\n'+err.message);
     btn.textContent='💾 Save Photo'; btn.disabled=false;
   }
   photoUploading=false;
 }
 
 async function deletePhoto(path) {
-  if(!confirm('Delete this photo from cloud?')) return;
+  if(!confirm('Delete this photo?')) return;
   if(await deleteFromSupabase(path)) await loadAndRenderPhotos();
-  else alert('Delete failed. Try again.');
+  else alert('Delete failed.');
 }
 
 async function loadAndRenderPhotos() {
-  const grouped = document.getElementById('photo-gallery-grouped');
-  if(grouped) grouped.innerHTML='<p style="text-align:center;padding:24px;color:#9E9E9E;font-size:13px">☁️ Loading photos...</p>';
-  try { photos = await fetchPhotosFromSupabase(); } catch(e) { photos=[]; }
+  const g=document.getElementById('photo-gallery-grouped');
+  if(g) g.innerHTML='<p style="text-align:center;padding:24px;color:#9E9E9E">☁️ Loading...</p>';
+  try{photos=await fetchPhotosFromSupabase();}catch(e){photos=[];console.log('Load error:',e);}
   renderGallery();
 }
 
 function renderPhotoSubjPills() {
-  const c = document.getElementById('photo-subj-pills');
+  const c=document.getElementById('photo-subj-pills');
   if(!c) return;
-  const subs = ['All',...new Set(photos.map(p=>p.subject))];
-  c.innerHTML = subs.map(s => {
-    const col = s==='All'?'#1A237E':(SUBJ_COLOR[s]||'#607D8B');
-    const active = photoSubjFilter===s;
-    return `<span class="pill ${active?'active':''}" style="${active?`background:${col};color:#fff`:`color:${col};border-color:${col}`}" onclick="setPhotoSubjFilter('${s}')">${s}</span>`;
+  const subs=['All',...new Set(photos.map(p=>p.subject))];
+  c.innerHTML=subs.map(s=>{
+    const col=s==='All'?'#1A237E':(SUBJ_COLOR[s]||'#607D8B');
+    const active=photoSubjFilter===s;
+    return '<span class="pill '+(active?'active':'')+'" style="'+(active?'background:'+col+';color:#fff':'color:'+col+';border-color:'+col)+'" onclick="setPhotoSubjFilter(''+s+'')">'+s+'</span>';
   }).join('');
 }
 
-function setPhotoSubjFilter(s){ photoSubjFilter=s; renderGallery(); }
+function setPhotoSubjFilter(s){photoSubjFilter=s;renderGallery();}
 
 function renderGallery() {
   renderPhotoSubjPills();
-  const df = document.getElementById('photo-filter-date');
+  const df=document.getElementById('photo-filter-date');
   if(!df) return;
-  const cur = df.value;
-  const dates = [...new Set(photos.map(p=>p.date))].sort().reverse();
-  df.innerHTML = '<option value="">All days</option>' + dates.map(d=>{
-    let lbl=d; try{lbl=isoToDate(d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}catch{}
-    return `<option value="${d}" ${cur===d?'selected':''}>${lbl}</option>`;
+  const cur=df.value;
+  const dates=[...new Set(photos.map(p=>p.date))].sort().reverse();
+  df.innerHTML='<option value="">All days</option>'+dates.map(d=>{
+    let lbl=d;try{lbl=isoToDate(d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}catch{}
+    return '<option value="'+d+'" '+(cur===d?'selected':'')+'>'+lbl+'</option>';
   }).join('');
 
   let filtered=[...photos];
@@ -572,37 +580,26 @@ function renderGallery() {
   const grouped=document.getElementById('photo-gallery-grouped');
   if(!grouped) return;
   if(!filtered.length){
-    grouped.innerHTML=`<div class="card"><div class="card-body" style="text-align:center;padding:28px;color:#9E9E9E;font-size:14px">${photos.length?'🔍 No photos match this filter':'📷 No photos yet — upload your first one!'}</div></div>`;
+    grouped.innerHTML='<div class="card"><div class="card-body" style="text-align:center;padding:28px;color:#9E9E9E;font-size:14px">'+(photos.length?'🔍 No photos match':'📷 No photos yet!')+'</div></div>';
     return;
   }
 
   const byDate={};
-  filtered.forEach(p=>{ if(!byDate[p.date])byDate[p.date]=[]; byDate[p.date].push(p); });
-  grouped.innerHTML = Object.keys(byDate).sort().reverse().map(date=>{
+  filtered.forEach(p=>{if(!byDate[p.date])byDate[p.date]=[];byDate[p.date].push(p);});
+  grouped.innerHTML=Object.keys(byDate).sort().reverse().map(date=>{
     const dp=byDate[date];
-    let dayLabel=date; try{dayLabel=isoToDate(date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}catch{}
-    const cards=dp.map(p=>`
-      <div class="photo-gallery-item">
-        <img src="${p.publicUrl}" alt="${p.subject}" loading="lazy" onclick="openPhotoModal('${p.publicUrl}','${p.subject}','${p.dateLabel}')">
-        <div class="photo-label">${p.subject}</div>
-        <button class="photo-del" onclick="deletePhoto('${p.path}')">✕</button>
-      </div>`).join('');
-    return `<div class="card" style="margin-bottom:14px">
-      <div class="card-head"><h2 style="font-size:14px">📅 ${dayLabel}</h2><p>${dp.length} photo${dp.length>1?'s':''}</p></div>
-      <div class="card-body" style="padding:10px 12px"><div class="photo-gallery">${cards}</div></div>
-    </div>`;
+    let dayLabel=date;try{dayLabel=isoToDate(date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}catch{}
+    const cards=dp.map(p=>'<div class="photo-gallery-item"><img src="'+p.publicUrl+'" alt="'+p.subject+'" loading="lazy" onclick="openPhotoModal(''+p.publicUrl+'',''+p.subject+'',''+p.dateLabel+'')"><div class="photo-label">'+p.subject+'</div><button class="photo-del" onclick="deletePhoto(''+p.path+'')">✕</button></div>').join('');
+    return '<div class="card" style="margin-bottom:14px"><div class="card-head"><h2 style="font-size:14px">📅 '+dayLabel+'</h2><p>'+dp.length+' photo'+(dp.length>1?'s':'')+'</p></div><div class="card-body" style="padding:10px 12px"><div class="photo-gallery">'+cards+'</div></div></div>';
   }).join('');
 }
 
 function openPhotoModal(url,subject,dateLabel){
   const o=document.createElement('div');
   o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px';
-  o.innerHTML=`<button onclick="this.parentElement.remove()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer">✕</button>
-    <img src="${url}" style="max-width:100%;max-height:80vh;border-radius:12px;object-fit:contain">
-    <div style="color:#fff;font-size:13px;margin-top:12px;text-align:center">${subject} · ${dateLabel}</div>`;
+  o.innerHTML='<button onclick="this.parentElement.remove()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer">✕</button><img src="'+url+'" style="max-width:100%;max-height:80vh;border-radius:12px;object-fit:contain"><div style="color:#fff;font-size:13px;margin-top:12px;text-align:center">'+subject+' · '+dateLabel+'</div>';
   document.body.appendChild(o);
 }
-
 // ══ REWARDS ══
 const MONTH_REWARDS = {
   '2026-09': { icon:'🎬', reward:'Movie night — you pick the film!' },
