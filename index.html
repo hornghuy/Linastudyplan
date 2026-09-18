@@ -5,10 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1A237E">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Study Plan">
+<meta name="app-version" content="202609180659">
+<script>
+(function(){
+  var V='202609180659';
+  var sv=localStorage.getItem('app_v');
+  if(sv && sv!==V){localStorage.setItem('app_v',V);window.location.reload(true);}
+  else{localStorage.setItem('app_v',V);}
+})();
+</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Study Plan">
+<rect width='100' height='100' rx='20' fill='%231A237E'/><text y='.9em' font-size='80' x='10'>📚</text></svg>">
 <title>Study Plan 📚</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -172,8 +185,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div id="today-c"></div>
 
   <!-- EXTRA SESSION FORM -->
-  <button class="extra-btn" onclick="toggleExtraForm()">＋ Add extra study session</button>
-  <div class="extra-form" id="extra-form">
+  <button class="extra-btn" onclick="toggleExtraForm＋ Add extra study session</button>
+  <div class="extra-form" id="extra-form" style="display:none">
     <label>Subject</label>
     <select id="ex-subj" style="width:100%;padding:9px 10px;border-radius:8px;border:1px solid #C5CAE9;font-size:13px;margin-bottom:10px">
       <option>Math</option><option>English</option><option>Khmer</option>
@@ -190,7 +203,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <label>Date (default: today)</label>
     <input type="date" id="ex-date" style="width:100%;padding:9px 10px;border-radius:8px;border:1px solid #C5CAE9;font-size:13px;margin-bottom:12px">
-    <button class="extra-add" onclick="addExtraSession()">Add Session ✓</button>
+    <button class="extra-add" onclick="addExtraSessionAdd Session ✓</button>
   </div>
 
   <div id="extra-list"></div>
@@ -232,7 +245,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="ch"><h2>📤 Upload Study Photo</h2><p>Take a photo of your notebook or notes</p></div>
     <div class="cb">
       <label>
-        <div class="upzone" id="upzone" ondragover="dov(event)" ondrop="ddr(event)" ondragleave="dlv()">
+        <div class="upzone" id="upzone" ondragover="dov(event)" ondrop="ddr(event)" ondragleave="dlv
           <div class="ui">📷</div>
           <p><strong>Tap to choose photo</strong></p>
           <p>JPG, PNG or any image</p>
@@ -245,13 +258,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <option>Math</option><option>English</option><option>Khmer</option>
         <option>Reading</option><option>Chemistry</option><option>Physics</option>
       </select>
-      <button class="pbtn" id="pbtn" onclick="saveF()">💾 Save Photo</button>
+      <button class="pbtn" id="pbtn" onclick="saveF💾 Save Photo</button>
       <div class="pok" id="pok">☁️ Saved to cloud!</div>
     </div>
   </div>
   <div class="card" style="margin-bottom:14px">
     <div class="cb" style="padding:12px 16px">
-      <div class="frow"><label>Filter by day:</label><select class="fsel" id="pfdate" onchange="renderGal()"><option value="">All days</option></select></div>
+      <div class="frow"><label>Filter by day:</label><select class="fsel" id="pfdate" onchange="renderGal<option value="">All days</option></select></div>
       <div class="pills" id="ppills"></div>
     </div>
   </div>
@@ -262,14 +275,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <!-- REWARD MODAL -->
 <div class="mover hid" id="modal">
   <div class="mbox">
-    <button class="mx" onclick="closeM()">✕</button>
+    <button class="mx" onclick="closeM✕</button>
     <span class="troph">🏆</span>
     <h2>You did it!</h2>
     <div class="mmonth" id="mm"></div>
     <div class="mpct" id="mp"></div>
     <p class="mmsg" id="mmsg"></p>
     <div class="rbox"><div class="rboxt">🎁 Your Reward</div><div class="rboxv" id="mrwd"></div></div>
-    <button class="claim" onclick="closeM()">Claim Reward 🎉</button>
+    <button class="claim" onclick="closeMClaim Reward 🎉</button>
   </div>
 </div>
 
@@ -330,7 +343,8 @@ function init(){
   ld();
   loadExtras();
   renderExtraList();
-  document.getElementById('tdate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const now=new Date();
+  document.getElementById('tdate').textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   let mi=allMK.indexOf(today().slice(0,7));
   logMI=mi<0?0:mi;
   renderToday();
@@ -355,13 +369,13 @@ function renderToday(){
   document.getElementById('ss').textContent=str;
   document.getElementById('st').textContent=tot;
   document.getElementById('mot').textContent=QUOTES[Math.min(Math.floor(tot/20),QUOTES.length-1)];
-  const c=document.getElementById('today-c');
+  const todayEl=document.getElementById('today-c');
   if(!tod.length){
     const pre=new Date()<new Date('2026-09-01');
-    c.innerHTML='<div class="rest"><div class="em">'+(pre?'⏳':'😴')+'</div><h2>'+(pre?'Starting Soon!':'Rest Day!')+'</h2><p>'+(pre?'Study plan starts September 1, 2026.<br>Get ready!':'No sessions today.<br>Relax and recharge!')+'</p></div>';
+    todayEl.innerHTML='<div class="rest"><div class="em">'+(pre?'⏳':'😴')+'</div><h2>'+(pre?'Starting Soon!':'Rest Day!')+'</h2><p>'+(pre?'Study plan starts September 1, 2026.<br>Get ready!':'No sessions today.<br>Relax and recharge!')+'</p></div>';
     return;
   }
-  c.innerHTML=tod.map(s=>{
+  todayEl.innerHTML=tod.map(s=>{
     const g=gs(s);
     const stars=[1,2,3,4,5,6,7,8,9,10].map(n=>'<button class="star" onclick="setScore(\''+sk(s)+'\','+n+')">'+(( g.score||0)>=n?'⭐':'☆')+'</button>').join('');
     return '<div class="scard" style="background:'+SL[s.subj]+'"><div class="stop"><span class="sdot" style="background:'+SC[s.subj]+'"></span><span class="sname" style="color:'+SC[s.subj]+'">'+s.subj+'</span><span class="stime">'+s.time+'</span></div><div class="sact"><button class="bd'+(g.status==='done'?' on':'')+'" onclick="mark(\''+sk(s)+'\',\'done\')">✅ Done</button><button class="bm'+(g.status==='miss'?' on':'')+'" onclick="mark(\''+sk(s)+'\',\'miss\')">❌ Missed</button><button class="bk'+(g.status==='skip'?' on':'')+'" onclick="mark(\''+sk(s)+'\',\'skip\')">⏭ Skip</button></div><div class="scrow" style="'+(g.status==='done'?'':'display:none')+'"><span>Score:</span>'+stars+'</div></div>';
@@ -718,16 +732,105 @@ function getExtraLogForMonth(mk, subjFilter){
 }
 
 
+// ── AUTO REFRESH ──
+let currentPage = 'today';
+
+// Refresh when user comes back to the app (switches tab or unlocks phone)
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible'){
+    console.log('App visible - refreshing...');
+    refreshCurrentPage();
+  }
+});
+
+// Also refresh when window gets focus
+window.addEventListener('focus', function(){
+  refreshCurrentPage();
+});
+
+// Auto refresh every 30 seconds
+setInterval(function(){
+  refreshCurrentPage();
+}, 30000);
+
+function refreshCurrentPage(){
+  // Update date in topbar
+  document.getElementById('tdate').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  // Refresh based on current active page
+  if(currentPage === 'today'){ renderToday(); renderExtraList(); }
+  if(currentPage === 'log'){ renderLog(); }
+  if(currentPage === 'progress'){ renderCharts(); }
+  if(currentPage === 'rewards'){ renderRewards(); }
+  if(currentPage === 'photos'){ loadPhotos(); }
+}
+
+
 // ── NAVIGATION ──
 function go(id,btn){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
+  currentPage=id;
   if(id==='progress')renderCharts();
   if(id==='rewards')renderRewards();
-  if(id==='photos')loadPhotos();
+  if(id==='photos'){loadPhotos();}
 }
+
+// ── AUTO REFRESH ──
+// Refresh when user comes back to the app
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible'){
+    renderToday();
+    renderLog();
+    if(document.getElementById('pg-progress').classList.contains('on')) renderCharts();
+    if(document.getElementById('pg-rewards').classList.contains('on')) renderRewards();
+    if(document.getElementById('pg-photos').classList.contains('on')) loadPhotos();
+  }
+});
+
+// Refresh when window gets focus (switching back from another app)
+window.addEventListener('focus', function(){
+  renderToday();
+  renderLog();
+});
+
+// ── PULL TO REFRESH ──
+let ptStartY=0, ptDist=0, ptRefreshing=false;
+const ptBar=document.createElement('div');
+ptBar.style.cssText='position:fixed;top:0;left:0;right:0;height:3px;background:#F9A825;z-index:9999;transform:scaleX(0);transform-origin:left;transition:transform .3s;display:none';
+document.body.appendChild(ptBar);
+
+document.addEventListener('touchstart',function(e){
+  if(window.scrollY===0) ptStartY=e.touches[0].clientY;
+},{ passive:true });
+
+document.addEventListener('touchmove',function(e){
+  if(!ptStartY||ptRefreshing)return;
+  ptDist=e.touches[0].clientY - ptStartY;
+  if(ptDist>0 && ptDist<80){
+    ptBar.style.display='block';
+    ptBar.style.transform='scaleX('+(ptDist/80)+')';
+  }
+},{ passive:true });
+
+document.addEventListener('touchend',function(){
+  if(ptDist>60 && !ptRefreshing){
+    ptRefreshing=true;
+    ptBar.style.transform='scaleX(1)';
+    // Refresh everything
+    renderToday();
+    renderLog();
+    loadPhotos().then(function(){
+      ptBar.style.transform='scaleX(0)';
+      setTimeout(function(){ptBar.style.display='none';ptRefreshing=false;ptDist=0;ptStartY=0;},300);
+    });
+  } else {
+    ptBar.style.transform='scaleX(0)';
+    setTimeout(function(){ptBar.style.display='none';ptDist=0;ptStartY=0;},300);
+  }
+});
+
 
 init();
 </script>
