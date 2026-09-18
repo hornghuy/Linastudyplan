@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1A237E">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Study Plan 📚</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -318,6 +321,12 @@ function mkD(iso){return new Date(iso+'T00:00:00')}
 
 // ── INIT ──
 function init(){
+  // Unregister old service workers to prevent stale cache
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      regs.forEach(function(r){r.unregister();});
+    });
+  }
   ld();
   loadExtras();
   renderExtraList();
@@ -374,13 +383,31 @@ function renderLog(){
   renderPills();
   const mk=allMK[logMI]||allMK[0];
   document.getElementById('lmon').textContent=mkD(mk+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
-  let f=sessions.filter(s=>s.mk===mk);
-  if(logSF!=='All')f=f.filter(s=>s.subj===logSF);
+  let f=sessions.filter(function(s){return s.mk===mk&&(logSF==='All'||s.subj===logSF);});
   const el=document.getElementById('llist');
-  if(!f.length){el.innerHTML='<p style="text-align:center;color:#9E9E9E;padding:20px 0">No sessions</p>';return;}
-  el.innerHTML=f.map(s=>{
-    const g=gs(s),sm={done:['✅ Done','td'],miss:['❌ Missed','tm'],skip:['⏭ Skip','tk']};
-    const[lb,cl]=sm[g.status]||['— Pending','tn'];
+
+  // Get extras for this month
+  const ex=(typeof extras!=='undefined'?extras:[]).filter(function(e){
+    return e.mk===mk&&(logSF==='All'||e.subj===logSF);
+  });
+
+  // Merge and sort by date
+  const all=[];
+  f.forEach(function(s){all.push({t:'s',d:s});});
+  ex.forEach(function(e){all.push({t:'e',d:e});});
+  all.sort(function(a,b){return a.d.date.localeCompare(b.d.date);});
+
+  if(!all.length){el.innerHTML='<p style="text-align:center;color:#9E9E9E;padding:20px 0">No sessions this month</p>';return;}
+
+  el.innerHTML=all.map(function(item){
+    if(item.t==='e'){
+      const e=item.d;
+      const fg=SC[e.subj]||'#1A237E';
+      return '<div class="li"><span class="ldot" style="background:'+fg+'"></span><div class="linfo"><div class="ldate">'+e.label+'</div><div class="lsub" style="color:'+fg+'">'+e.subj+' · '+e.time+' <span class="extra-tag">extra</span></div></div><span class="ltag td">✅ Done</span></div>';
+    }
+    const s=item.d,g=gs(s);
+    const lb={done:'✅ Done',miss:'❌ Missed',skip:'⏭ Skip'}[g.status]||'— Pending';
+    const cl={done:'td',miss:'tm',skip:'tk'}[g.status]||'tn';
     return '<div class="li"><span class="ldot" style="background:'+SC[s.subj]+'"></span><div class="linfo"><div class="ldate">'+s.label+(g.score?' · ⭐'+g.score+'/10':'')+'</div><div class="lsub" style="color:'+SC[s.subj]+'">'+s.subj+' · '+s.time+'</div></div><span class="ltag '+cl+'">'+lb+'</span></div>';
   }).join('');
 }
@@ -474,14 +501,36 @@ async function uploadPhoto(file,subj){
   form.append('file',file);
   form.append('upload_preset',UPLOAD_PRESET);
   form.append('public_id',publicId);
-  form.append('tags',subj+'|'+today());
+  form.append('tags[]','study-photos');
+  form.append('tags[]',subj);
+  form.append('tags[]',today());
   const res=await fetch(CLOUD_URL,{method:'POST',body:form});
   if(!res.ok){const t=await res.text();throw new Error(t);}
   const data=await res.json();
   return{path:data.public_id,url:data.secure_url,subj,date:today()};
 }
 async function fetchPhotos(){
-  // Photos stored in localStorage as metadata + Cloudinary URLs
+  // Primary: fetch from Cloudinary using resource list API
+  try{
+    const res=await fetch('https://res.cloudinary.com/'+CLOUD_NAME+'/image/list/study-photos.json');
+    if(res.ok){
+      const data=await res.json();
+      const resources=data.resources||[];
+      return resources.map(function(r){
+        const tags=r.tags||[];
+        const subj=tags.find(function(t){return t!=='study-photos';})||'General';
+        const date=r.public_id.split('/')[1]||today();
+        let dl=date;
+        try{dl=mkD(date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}catch{}
+        return{
+          path:r.public_id,
+          url:r.secure_url||('https://res.cloudinary.com/'+CLOUD_NAME+'/image/upload/'+r.public_id),
+          subj:subj,date:date,dl:dl,cr:r.created_at||''
+        };
+      }).sort(function(a,b){return b.date.localeCompare(a.date)||b.cr.localeCompare(a.cr);});
+    }
+  }catch(e){console.log('Cloudinary fetch failed, using local:',e);}
+  // Fallback: localStorage
   try{
     const stored=JSON.parse(localStorage.getItem('cl_photos')||'[]');
     return stored.sort(function(a,b){return b.date.localeCompare(a.date)||b.cr.localeCompare(a.cr);});
