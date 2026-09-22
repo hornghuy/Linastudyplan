@@ -219,9 +219,10 @@ var RWD={
   '2027-07':'Mystery gift - surprise!',
   '2027-08':'MEGA reward - whole weekend off + surprise!'
 };
-var CLOUD='gxhizylp';
-var PRESET='rtpzmzpn';
-var CURL='https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload';
+var SURL='https://erxypkscgonqplszntxf.supabase.co';
+var SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyeHlwa3NjZ29ucXBsc3pudHhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNTQ0MDksImV4cCI6MjEwMjgzMDQwOX0.8yyLqsqYorDwR8InCE6JBfS8TmRE8J2lWQQR-eHOJOw';
+var BUCKET='study-photos';
+var SB_HDR={'Authorization':'Bearer '+SKEY,'apikey':SKEY};
 
 var KEY='sp4';
 var EXKEY='spex4';
@@ -567,31 +568,49 @@ function renderExtList(){
 
 async function uploadPhoto(file,subj){
   var safe=(subj||'General').replace(/[^a-zA-Z0-9]/g,'_');
-  var pid='study-photos/'+tod()+'/'+safe+'_'+Date.now();
-  var form=new FormData();
-  form.append('file',file);
-  form.append('upload_preset',PRESET);
-  form.append('public_id',pid);
-  form.append('tags','study-photos,'+subj+','+tod());
-  var res=await fetch(CURL,{method:'POST',body:form});
-  if(!res.ok)throw new Error(await res.text());
-  var data=await res.json();
-  return{path:data.public_id,url:data.secure_url,subj:subj,date:tod(),dl:fmtD(tod()),cr:new Date().toISOString()};
+  var path=tod()+'/'+safe+'_'+Date.now()+'.jpg';
+  var res=await fetch(SURL+'/storage/v1/object/'+BUCKET+'/'+path,{
+    method:'POST',
+    headers:Object.assign({},SB_HDR,{'Content-Type':file.type||'image/jpeg','x-upsert':'true'}),
+    body:file
+  });
+  if(!res.ok){var t=await res.text();throw new Error(t);}
+  return{
+    path:path,
+    url:SURL+'/storage/v1/object/public/'+BUCKET+'/'+path,
+    subj:subj,date:tod(),dl:fmtD(tod()),cr:new Date().toISOString()
+  };
 }
 async function fetchPhotos(){
   try{
-    var res=await fetch('https://res.cloudinary.com/'+CLOUD+'/image/list/study-photos.json');
-    if(res.ok){
-      var data=await res.json();
-      return (data.resources||[]).map(function(r){
-        var tags=(r.tags||[]).filter(function(t){return t!=='study-photos';});
-        var subj=tags[0]||'General';
-        var date=tags[1]||tod();
-        return{path:r.public_id,url:r.secure_url,subj:subj,date:date,dl:fmtD(date),cr:r.created_at||''};
-      }).sort(function(a,b){return b.date.localeCompare(a.date);});
-    }
-  }catch(e){console.log('Cloudinary list failed:',e);}
-  try{return JSON.parse(localStorage.getItem('cl_photos')||'[]');}catch(e){return[];}
+    var res=await fetch(SURL+'/storage/v1/object/list/'+BUCKET,{
+      method:'POST',
+      headers:Object.assign({},SB_HDR,{'Content-Type':'application/json'}),
+      body:JSON.stringify({prefix:'',limit:500,offset:0,sortBy:{column:'created_at',order:'desc'}})
+    });
+    if(!res.ok)return[];
+    var files=await res.json();
+    var all=[];
+    (files||[]).forEach(function(f){
+      if(!f.name||f.name.endsWith('/'))return;
+      // folders
+      if(!f.id){return;}
+      var parts=f.name.split('/');
+      var date=parts[0]||tod();
+      var fn=parts[parts.length-1]||'';
+      var sm=fn.match(/^([^_]+)/);
+      var subj=sm?sm[1].replace(/_/g,' '):'General';
+      all.push({
+        path:f.name,
+        url:SURL+'/storage/v1/object/public/'+BUCKET+'/'+f.name,
+        subj:subj,date:date,dl:fmtD(date),cr:f.created_at||''
+      });
+    });
+    return all.sort(function(a,b){return b.date.localeCompare(a.date)||b.cr.localeCompare(a.cr);});
+  }catch(e){
+    console.log('Supabase fetch failed:',e);
+    return[];
+  }
 }
 function prevF(e){
   var f=e.target.files[0];if(!f)return;phFile=f;
@@ -612,11 +631,6 @@ async function saveF(){
   btn.textContent='Uploading...';btn.disabled=true;phUL=true;
   try{
     var result=await uploadPhoto(phFile,subj);
-    var stored=[];
-    try{stored=JSON.parse(localStorage.getItem('cl_photos')||'[]');}catch(e){}
-    stored.unshift(result);
-    if(stored.length>100)stored=stored.slice(0,100);
-    localStorage.setItem('cl_photos',JSON.stringify(stored));
     document.getElementById('pok').style.display='block';
     btn.style.display='none';
     document.getElementById('pthumb').style.display='none';
@@ -633,9 +647,12 @@ async function saveF(){
 async function doDelPhoto(path){
   if(!confirm('Delete this photo?'))return;
   try{
-    var s=JSON.parse(localStorage.getItem('cl_photos')||'[]');
-    localStorage.setItem('cl_photos',JSON.stringify(s.filter(function(p){return p.path!==path;})));
-  }catch(e){}
+    await fetch(SURL+'/storage/v1/object/'+BUCKET,{
+      method:'DELETE',
+      headers:Object.assign({},SB_HDR,{'Content-Type':'application/json'}),
+      body:JSON.stringify({prefixes:[path]})
+    });
+  }catch(e){console.log('Delete failed:',e);}
   await loadPhotos();
 }
 async function loadPhotos(){
