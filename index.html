@@ -582,35 +582,43 @@ async function uploadPhoto(file,subj){
   };
 }
 async function fetchPhotos(){
+  var all=[];
+  // Get list of date folders first
   try{
-    var res=await fetch(SURL+'/storage/v1/object/list/'+BUCKET,{
+    var r1=await fetch(SURL+'/storage/v1/object/list/'+BUCKET,{
       method:'POST',
       headers:Object.assign({},SB_HDR,{'Content-Type':'application/json'}),
-      body:JSON.stringify({prefix:'',limit:500,offset:0,sortBy:{column:'created_at',order:'desc'}})
+      body:JSON.stringify({prefix:'',limit:100,offset:0})
     });
-    if(!res.ok)return[];
-    var files=await res.json();
-    var all=[];
-    (files||[]).forEach(function(f){
-      if(!f.name||f.name.endsWith('/'))return;
-      // folders
-      if(!f.id){return;}
-      var parts=f.name.split('/');
-      var date=parts[0]||tod();
-      var fn=parts[parts.length-1]||'';
-      var sm=fn.match(/^([^_]+)/);
-      var subj=sm?sm[1].replace(/_/g,' '):'General';
-      all.push({
-        path:f.name,
-        url:SURL+'/storage/v1/object/public/'+BUCKET+'/'+f.name,
-        subj:subj,date:date,dl:fmtD(date),cr:f.created_at||''
+    if(!r1.ok){console.log('List root failed:',r1.status,await r1.text());return[];}
+    var folders=await r1.json();
+    console.log('Folders found:',folders.length,JSON.stringify(folders).slice(0,200));
+    for(var i=0;i<folders.length;i++){
+      var folder=folders[i];
+      if(!folder||!folder.name)continue;
+      var folderName=folder.name;
+      // List files inside this folder
+      var r2=await fetch(SURL+'/storage/v1/object/list/'+BUCKET,{
+        method:'POST',
+        headers:Object.assign({},SB_HDR,{'Content-Type':'application/json'}),
+        body:JSON.stringify({prefix:folderName+'/',limit:200,offset:0})
       });
-    });
-    return all.sort(function(a,b){return b.date.localeCompare(a.date)||b.cr.localeCompare(a.cr);});
-  }catch(e){
-    console.log('Supabase fetch failed:',e);
-    return[];
-  }
+      if(!r2.ok)continue;
+      var files=await r2.json();
+      console.log('Files in',folderName,':',files.length);
+      (files||[]).forEach(function(f){
+        if(!f||!f.name)return;
+        var fullPath=folderName+'/'+f.name;
+        var sm=f.name.match(/^([^_]+)/);
+        var subj=sm?sm[1].replace(/_/g,' '):'General';
+        var url=SURL+'/storage/v1/object/public/'+BUCKET+'/'+fullPath;
+        console.log('Photo URL:',url);
+        all.push({path:fullPath,url:url,subj:subj,date:folderName,dl:fmtD(folderName),cr:f.created_at||''});
+      });
+    }
+  }catch(e){console.log('fetchPhotos error:',e);}
+  console.log('Total photos found:',all.length);
+  return all.sort(function(a,b){return b.date.localeCompare(a.date)||b.cr.localeCompare(a.cr);});
 }
 function prevF(e){
   var f=e.target.files[0];if(!f)return;phFile=f;
